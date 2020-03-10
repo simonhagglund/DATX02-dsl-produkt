@@ -1,0 +1,235 @@
+\documentclass%[final]%removes todos
+{article}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Imports.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[left=3cm,top=3cm,right=3cm,nofoot]{geometry} %avstånd till kanter
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{csquotes}
+\usepackage{comment}
+\usepackage{biblatex}
+\usepackage{array, booktabs}
+\usepackage{graphicx}
+\usepackage[x11names,table]{xcolor}
+\usepackage{caption}
+\usepackage[TS1,T1]{fontenc}
+\usepackage[obeyFinal]{todonotes}
+\usepackage{ifthen}
+\usepackage{tocloft}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{mathrsfs}
+\usepackage{hyperref}
+\usepackage{subfiles} % Ladda denna sist.
+%\usepackage{parskip}
+
+\usepackage{xcolor}
+\usepackage{listings}
+\lstloadlanguages{Haskell}
+\lstnewenvironment{code}{
+    \lstset{language=Haskell,
+    %basicstyle=\ttfamily,
+    %keywordstyle=\color{blue},
+    %backgroundcolor=\color{gray}
+    %frame=single,
+    backgroundcolor=\color{lightgray},
+    xleftmargin=20pt,
+    stepnumber=1,       % the step between two line-numbers. If it's 1, each line will be numbered
+    numbers=left,
+    numbersep=10pt,     % how far the line-numbers are from the code
+    numberstyle=\rmfamily\scriptsize\color[gray]{0.3}, %font,size,color{0=black, 1= white}
+    captionpos=b,
+    tabsize=2,
+    commentstyle=\it,
+    stringstyle=\mdseries\rmfamily,
+    showspaces=false,
+    keywordstyle=\bfseries\rmfamily,
+    columns=flexible,
+    basicstyle=\small\rmfamily,
+    showstringspaces=false,
+    morecomment=[l]\%,    
+}}{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Cool Latex stuff.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\DeclareCaptionFont{blue}{\color{LightSteelBlue3}}
+\addbibresource{refs.bib}
+\setlength{\marginparwidth}{4.3cm}
+\newcommand{\foo}{\color{LightSteelBlue3}\makebox[0pt]{\textbullet}\hskip-0.5pt\vrule width 1pt\hspace{\labelsep}}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+% Adds choice for hiding stuff when we are in a writing phase. 
+\newboolean{DELOPMENT}
+\setboolean{DELOPMENT}{false}   
+
+% quick color names for ease of remembering
+\colorlet{urgent}{red}
+\colorlet{fixme}{orange}
+\colorlet{lessurgent}{blue!20} 
+\colorlet{other}{yellow!30} 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Title page.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Educational Language of Control Theory?
+% Teaching Control?
+% Domain Specific Education, Control Edition?
+% Learning the Language of Control?
+% Learning Material for Control Theory with Domain-Specific Languages?
+% Demystifying syntax and semantics of control theory.  
+% Controlling Education through Domain Specific Languages 
+\title{Demystifying the Syntax and Semantics of Control Theory
+\vspace*{5.5mm}
+% (Using Domain-specific Languages?)
+\\ {\Large Developing course material using \\ Domain-Specific Languages} 
+\vspace*{85mm}
+}
+  
+\author{
+    Filip Nylander \and
+    \vspace*{0.001pt}
+    Jakob Fihlman \and 
+    Christian Josefson \and 
+    Elin Ohlman \and 
+    Tommy Räjert \and 
+    Simon Hägglund
+    }
+\bigskip
+\date{\vspace*{5mm} Spring - 2020} % unless anyone comes up with anything better 
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+\ifDELOPMENT
+Proposed colour coding for todo notes. TR
+\setlength{\marginparwidth}{2.6cm}
+\todo[color=gray!10]{Colour coding:}
+\setlength{\marginparwidth}{4.3cm}
+\todo[color=urgent]{Urgent comments}
+\todo[color=fixme]{Fix-me comments}
+\todo[color=lessurgent]{Less urgent comments}
+\todo[color=other]{Other highlights}
+\fi
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Table of contents.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\renewcommand*\contentsname{Table of Contents}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+\tableofcontents
+\newpage
+\section{Introduction}
+\todo[inline,color=other]{Här står det vad detta är (ett komplimenterande kursmaterial till kursen...) Beskrivning av dsl. Hänvisningar till learnyouahaskell och till Patriks github, ev även till de andra kandidatarbeterna. Tack till patrik och även till de tidigare kandidatarbetena som vi har hämtat inspiration av och även till viss del byggt vidare på (främst TSS)}
+
+
+
+
+\section{Complex numbers}
+Här är målet främst att introducera dsl som koncept och även introducera hur vi behandlar komplexa tal eftersom detta kommer återkomma mycket i texten. Vi gör detta genom att snabbt repetera komplexa tal. Vi antar dock att läsaren igentligen är bekväm med komplexa tal och att detta istället är en mjukstart för dsl, haskell och våra egna betäckningar.\\
+
+
+
+
+\begin{code}
+data Complex = Complex (double, double)
+  deriving Eq
+  
+whatsReal :: Complex -> double
+whatsReal Complex (real,_) = real
+
+whatsImaginary :: Complex -> double
+whatsImaginary Complex (_,ima) = ima
+
+  
+add :: Complex -> Complex -> Complex
+add Complex (r1,i1) Complex (r2,i2) = Complex (r1+r2,i1+i2)
+
+subtract :: Complex -> Complex -> Complex
+subtract Complex (r1,i1) Complex (r2,i2) = Complex (r1-r2,i1-i2)
+
+sub :: Complex -> Complex -> Complex
+sub complex1 complex2 = subtract complex1 complex2
+
+absolute :: Complex -> double
+absolute Complex (real,ima) = root ((real*real)+(ima*ima))
+
+abs :: Complex -> double
+abs complex = absolute complex
+
+argument :: Complex -> double
+%% TODO
+
+
+multiply :: Complex -> Complex -> Complex
+multiply Complex (r1,i1) Complex (r2,i2)
+  = Complex (r1*r2-i1*i2,r1*i2+r2*i1)
+
+\end{code}
+
+
+\section{Laplace transform}
+The Laplace transform is a tool that enables us to look at a function or equation from a different perspective. More specifically, it takes a function of time and transforms it into a function of frequency. This might seem like a weird thing to do, but it simplifies calculations quite a bit, more on that later. 
+
+The definition of the Laplace transform is clunky to actually work with, so the common praxis is to have a table of common functions and their Laplace transforms, and use some rules to calculate the harder problems. 
+We will utilize this tabular approach. 
+
+If we define 
+\begin{code}
+type TimeDomain      = Real 
+type FrequencyDomain = Complex 
+\end{code}
+then we can define the type of the laplace transform accordingly: 
+\begin{code} 
+laplace :: TimeDomain -> FrequencyDomain 
+\end{code}
+
+
+\todo[color=other]{Introduce what a laplace transform is in words.
+Show how we construct it in a dsl. (show code)
+Some examples (just showing that the code works)
+Some examples from the book. As many different ones as possible, if some examples doesn't work with our code explain why.
+}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Sections
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% Appendix stuff
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\section*{Appendix}
+\listoffigures
+\listoftables
+
+\end{document}
