@@ -1,0 +1,14 @@
+\textbf{VARNING! Första utkast. Förvänta er fel.}
+
+(1 + L(s)) unstable if 0.
+
+To decide if a system is stable or not Nyquist theorem of stability can be used. If the transfer function is unstable, L(s) got poles in the right plane, Nyquist complete theorem is used. When we are looking for poles, we surround(bör ändras) the part we want to investigate. In Haskell we map all these values to the transfer function. If we want to look at the entire right half of our plane, we surround the right field with an infinite big circle.
+\hrule
+(Lägg till bilden på mappningen här)
+\hrule
+But since we can’t compute a function with an infinitive big input, we can focus on four important values. When w=0, w=inf, w when we cross the real axis and w when we cross the imaginary axis. This will be enough for the most basic transfer functions.
+
+För att avgöra om att system är stabilt kan Nyqvist kriterium användas. Om kretsöverförningen är stabil används Nyqvist förenklade kriterium om inte så används Nyqvist fullständiga kriterium. Fördelen med Nyqvist kriterium är att man kan avgöra om det slutna systemet är stabilt baserat på det öppna systemet.
+
+När Nyqvist fullständiga kriterium användas kan det ses som att Nyqvist-kontur mappas till ett nytt plan med hjälp av kretsöverförningen och skapar Nyqvist plot.
+map L(s) [(0, inf)…(0, -inf)] = Nyqvist plot

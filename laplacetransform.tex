@@ -1,0 +1,59 @@
+
+\section{Laplace transform}
+The Laplace transform is a tool that enables us to look at a function or equation from a different perspective. More specifically, it takes a function of time and transforms it into a function of frequency.
+The Laplace transform is often used to solve differential equations, but more on that later. 
+
+The definition of the Laplace transform is  
+\begin{equation*}
+    \Lplc \left\{ f(t)\right\}(s) = \int_0^\infty e^{-s\tau} f(\tau) \, \text{d} \tau.
+\end{equation*}
+When applicable we call the Laplace transform of a function by the capital version of the original functions name, e.g. the Laplace transform of $f(t)$ is $F(s)$.
+
+What are the types? An initial inspection allows us to identify
+\begin{code}
+t      :: Real 
+f, exp :: Real -> Real 
+\end{code}
+and from DSLsofmath\todo[color=other]{Add citation, probably around page 60} we know that 
+\begin{code}
+integ :: Real -> Real -> (Real -> Real) -> Real -- definite integral \end{code}% better type for it? 
+i.e. the integral takes two real arguments (the limits) and a function, returning a real number. 
+Letting $s$ be a real number as well works fine, but in fact it's possible to be a bit more general and let it be a complex number. 
+
+From this we can read that the Laplace transform should have the type
+\begin{code}
+laplace :: (Real -> Real) -> (Complex -> Complex) 
+\end{code}
+i.e. it's a function taking a function and transforming it into another function. 
+
+The definition of the Laplace transform is clunky to actually work with, so common practise is to have a table of common functions and their Laplace transforms, and use some rules to calculate the harder problems. We will utilize this tabular approach. 
+
+One of the most important properties of the Laplace transform is that
+\begin{equation*}
+    \Lplc \left\{ f'(t)\right\} (s) = s F(s) - f(0).
+\end{equation*}
+This allows us to transform a differential equation into an algebraic equation, i.e. one that only includes the typical operations of algebra.
+
+
+If we define 
+\begin{code}
+type TimeDomain      = Real
+type FrequencyDomain = Complex
+\end{code}
+then we can define the type of the laplace transform accordingly: 
+\begin{code} 
+laplace :: TimeDomain -> FrequencyDomain 
+\end{code}
+
+
+
+
+
+
+
+
+\todo[inline,color=other]{Introduce what a laplace transform is in words.
+Show how we construct it in a dsl. (show code)
+Some examples (just showing that the code works)
+Some examples from the book. As many different ones as possible, if some examples doesn't work with our code explain why.
+}
