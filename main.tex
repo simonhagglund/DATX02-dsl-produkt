@@ -5,7 +5,8 @@
 % Imports.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\usepackage[left=3cm,top=3cm,right=3cm,nofoot]{geometry} %avstånd till kanter
+%\usepackage[left=3cm,top=3cm,right=3cm,nofoot]{geometry} %avstånd till kanter
+\usepackage{a4wide}
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
@@ -21,7 +22,7 @@
 \usepackage[obeyFinal]{todonotes}
 \usepackage{ifthen}
 \usepackage{tocloft}
-\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
 \usepackage{mathrsfs}
 \usepackage{hyperref}
 \usepackage{subfiles} % Ladda denna sist.
@@ -54,6 +55,31 @@
     morecomment=[l]\%,    
 }}{}
 
+\lstnewenvironment{codeeq}{ % I tried something, not sure whether to keep it 
+    \lstset{language=Haskell,
+    basicstyle=\ttfamily,
+    %keywordstyle=\color{blue},
+    %backgroundcolor=\color{gray}
+    %frame=single,
+    %backgroundcolor=\color{lightgray},
+    xleftmargin=50pt,
+    %stepnumber=1,       % the step between two line-numbers. If it's 1, each line will be numbered
+    %numbers=left,
+    %numbersep=10pt,     % how far the line-numbers are from the code
+    %numberstyle=\rmfamily\scriptsize\color[gray]{0.3}, %font,size,color{0=black, 1= white}
+    captionpos=b,
+    tabsize=2,
+    commentstyle=\it,
+    stringstyle=\mdseries\rmfamily,
+    showspaces=false,
+    keywordstyle=\bfseries\rmfamily,
+    columns=flexible,
+    %basicstyle=\small\rmfamily,
+    showstringspaces=false,
+    morecomment=[l]\%,    
+}}{}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
 % Cool Latex stuff.
@@ -64,7 +90,7 @@
 
 \DeclareCaptionFont{blue}{\color{LightSteelBlue3}}
 \addbibresource{refs.bib}
-\setlength{\marginparwidth}{4.3cm}
+%\setlength{\marginparwidth}{4.3cm}
 \newcommand{\foo}{\color{LightSteelBlue3}\makebox[0pt]{\textbullet}\hskip-0.5pt\vrule width 1pt\hspace{\labelsep}}
 
 \hypersetup{
@@ -88,6 +114,13 @@
 %%%%% New commands 
 
 \newcommand{\Lplc}{\mathscr{L}}
+
+
+%%%%% Temporary example environment
+\theoremstyle{definition} % non-italic text in examples
+\newtheorem{example}{Example}
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -131,7 +164,7 @@
 Proposed colour coding for todo notes. TR
 \setlength{\marginparwidth}{2.6cm}
 \todo[color=gray!10]{Colour coding:}
-\setlength{\marginparwidth}{4.3cm}
+%\setlength{\marginparwidth}{4.3cm}
 \todo[color=urgent]{Urgent comments}
 \todo[color=fixme]{Fix-me comments}
 \todo[color=lessurgent]{Less urgent comments}
@@ -165,6 +198,7 @@ Proposed colour coding for todo notes. TR
 
 \subfile{complexnumbers}
 \subfile{laplacetransform} 
+\subfile{transferfunctions}
 \subfile{control} 
 \subfile{nyqvist} 
 

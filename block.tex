@@ -1,0 +1,43 @@
+\documentclass{article}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\begin{document}
+\tikzstyle{startstop} = [rectangle, rounded corners, minimum width=3cm, minimum height=1cm,text centered, draw=black]
+\tikzstyle{inout} = [coordinate]
+\tikzstyle{circles} = [draw, fill=white, circle, node distance=1cm]
+
+\begin{tikzpicture}
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+\node (cont) [startstop] {Controller F(s)};
+\node (trans) [startstop, right of=cont,  xshift=3cm] {Transfer func. H(s)};
+\node (feedback) [startstop, below of=cont, yshift=-1cm, xshift=2cm] {Feedback};
+
+\node (output) [inout, right of=trans, xshift = 2 cm ] {};
+\node (input) [inout, left of=cont, xshift = -2.5 cm] {};
+
+\node (bottom) [inout, below of=trans, yshift = -2 cm] {};
+\node (right) [inout, right of=trans, xshift = 1 cm] {};
+
+
+\node (adds) [circles, left of=cont, xshift=-1.5cm] {};
+
+
+\draw [arrow] (cont) -- node[anchor=south] {U(s)} (trans);
+\draw [arrow] (trans) -- node[anchor=south] {Y(s)} (output);
+
+\draw [arrow] (right) |- (feedback);
+\draw [arrow] (feedback) -| node[anchor=east] {Y(s)} (adds);
+
+\draw [arrow] (input) -- node[anchor=south] {R(s)} (adds);
+\draw [arrow] (adds) -- node[anchor=south] {E(s)} (cont);
+
+
+
+
+
+
+\end{tikzpicture}
+
+\end{document}

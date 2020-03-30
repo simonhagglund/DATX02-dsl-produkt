@@ -5,11 +5,12 @@ The Laplace transform is often used to solve differential equations, but more on
 
 The definition of the Laplace transform is  
 \begin{equation*}
-    \Lplc \left\{ f(t)\right\}(s) = \int_0^\infty e^{-s\tau} f(\tau) \, \text{d} \tau.
+    \Lplc \left\{ f(t)\right\}(s) = \int_0^\infty e^{-s\tau} f(\tau) \, \text{d} \tau. % ordinary mathematical 
+    %\Lplc \left\{ \lambda t. f(t)\right\}(s) = \int_0^\infty \lambda t. (e^{-st} f(t)) \, \text{d} t. % lambda calculus
 \end{equation*}
-When applicable we call the Laplace transform of a function by the capital version of the original functions name, e.g. the Laplace transform of $f(t)$ is $F(s)$.
+When applicable we call the Laplace transform of a function by the capital version of the original function's name, e.g. the Laplace transform of $f(t)$ is $F(s)$.
 
-What are the types? An initial inspection allows us to identify
+What are the types in this expression? An initial inspection allows us to identify
 \begin{code}
 t      :: Real 
 f, exp :: Real -> Real 
@@ -24,15 +25,91 @@ From this we can read that the Laplace transform should have the type
 \begin{code}
 laplace :: (Real -> Real) -> (Complex -> Complex) 
 \end{code}
-i.e. it's a function taking a function and transforming it into another function. 
+i.e. it's something that takes a function and transforms it into another function. 
 
-The definition of the Laplace transform is clunky to actually work with, so common practise is to have a table of common functions and their Laplace transforms, and use some rules to calculate the harder problems. We will utilize this tabular approach. 
+The definition of the Laplace transform is clunky to actually work with, so common practise is to have a table of common functions and their Laplace transforms, and use some rules to calculate the harder problems. 
+We will utilize this tabular approach. For example, we might be asked to find the Laplace transform of 
+\begin{equation*}
+    f(t) = e^{\alpha t}.
+\end{equation*}
+If we look in table \ref{tab:laplacetrans}, we can see that the corresponding laplace transform is 
+\begin{equation*}
+    \Lplc \left\{e^{\alpha t}\right\} = \frac{1}{s-\alpha}.
+\end{equation*}
+
 
 One of the most important properties of the Laplace transform is that
 \begin{equation*}
     \Lplc \left\{ f'(t)\right\} (s) = s F(s) - f(0).
 \end{equation*}
 This allows us to transform a differential equation into an algebraic equation, i.e. one that only includes the typical operations of algebra.
+
+
+\begin{example}
+Use the Laplace transform to find f satisfying 
+\begin{equation*}
+    f'(t) = - f(t) \qquad f(0) = 1
+\end{equation*} 
+
+\textbf{Solution.} 
+What we want to do is apply the Laplace transform to both sides of the equation, and then use the resulting equation to find an explicit expression for $F(s)$. 
+
+\todo[inline,color=other]{I tried writing the calculations less math-y and writing it like it was code, kinda. I'm not sure if this is the way to go, but it might be better if we typeset it properly?}
+First, we apply the Laplace transform to the left hand side, which gives us 
+\begin{codeeq} 
+laplace f' = \s -> s * laplace f s - Const (eval f 0)
+            = \s -> s * laplace f s - Const 1 
+\end{codeeq} % the equals signs look unbalanced here but they look right when compiled 
+
+Then we do the same thing to the right hand side. 
+\begin{codeeq}
+laplace (-f) = \s -> - (laplace f s) 
+\end{codeeq} 
+
+if we let \verb|F = \s -> laplace f s| and write these two sides as equal to each other: 
+
+\begin{codeeq} 
+s * F s - Const 1 = - (F s)
+\end{codeeq} 
+
+if we move all instances of F s to one side and everything else to one side we get
+
+\begin{codeeq}
+s * F s + F s = Const 1.
+\end{codeeq}
+Factor out F s:
+
+\begin{codeeq}
+F s * (s + 1) = Const 1
+\end{codeeq} 
+and divide by (s + 1):
+
+\begin{codeeq}
+F s = Const 1 / (s + 1)
+\end{codeeq} 
+or in mathematical writing: 
+\begin{equation*} 
+    F(s) = \frac{1}{s+1}
+\end{equation*} 
+
+
+Now, if we look at the table of Laplace transforms, we can find that this is the transform of $e^{-t}$, so we can assume that the answer is $f(t) = e^{-t}$ (and this is in fact correct!).
+
+Although we are done with the exercise now, a good habit to get into early is to always double check if the function satisfies the differential equation. If we differentiate $f(t)$ we get
+\begin{equation*}
+    f'(t) = -e^{-t} = - f(t).
+\end{equation*}
+Thus we know that one of the conditions holds. Inserting $t=0$ into $f(t)$ gives us 
+\begin{equation*}
+    f(0) = e^{-0} = 1,
+\end{equation*}
+so the second condition holds as well. Now we know that $f(t) = e^{-t}$ really is a solution to the differential equation. 
+
+Checking if the function satisfied the equation might seem superflous, but when solving slightly more complicated problems one often have to use partial fraction decomposition, in which it's very easy to make mistakes. Checking if the solution matches the equation is a simple way to check if your result is correct. 
+
+\end{example}
+
+
 
 
 If we define 

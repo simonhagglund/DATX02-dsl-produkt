@@ -1,10 +1,150 @@
 
 \section{Complex numbers}
-Här är målet främst att introducera dsl som koncept och även introducera hur vi behandlar komplexa tal eftersom detta kommer återkomma mycket i texten. Vi gör detta genom att snabbt repetera komplexa tal. Vi antar dock att läsaren igentligen är bekväm med komplexa tal och att detta istället är en mjukstart för dsl, haskell och våra egna betäckningar.\\
+\iffalse
+Här är målet främst att introducera dsl som koncept och även introducera hur vi behandlar komplexa tal eftersom detta kommer återkomma mycket i texten. Vi gör detta genom att snabbt repetera komplexa tal. Vi antar dock att läsaren egentligen är bekväm med komplexa tal och att detta istället är en mjukstart för dsl, haskell och våra egna betäckningar.\\
+\fi
+
+The natural numbers consist of all non-decimalized positive numbers. Adding the negative numbers creates the integers. We then get rational numbers, real numbers... and finally, adding imaginary numbers creates the complex numbers. % very blunt without much space to think/process, could probably use a rewrite
+
+So what then are Imaginary numbers? Imaginary numbers are the pet project of some scientist who really really wanted a root to -1. This then turned into an entire field of study. No, we don't get it either. Luckily, we don't need to understand how they came into being to know how to use them.
+
+First, there is one core rule that needs to be understood:
+\begin{code}
+i == root(-1),
+-1 == i^2
+\end{code}
+If you think that looks suspiciously like two rules, then you are wrong. roots and powers are each others' inverse equivalents. The two lines are merely looking at the connection between i and -1 from different perspectives. This rule is also known as ''the definition of i''. % Is this too rude? Too unclear?
+
+In practice, imaginary numbers have an annoying tendency to show up alongside regular, 'real' numbers. As such, the mathematicians have standardized complex numbers as being read ''a + bi''. Rather than explain this expression, however, we are going to ignore it and create our own using the power of programming:
+\begin{code}
+data Complex = Complex (double, double)
+\end{code}
+There's a few things to unpack here.
+
+First, the stuff to the left of the equality mark says that there's totally a datatype called ''Complex''(named after Complex numbers, not sure if that was obvious). The stuff to the right of the equality mark says that this datatype consists of the static word ''Complex'' followed by a pair of doubles(I.E. numbers with decimals) inside brackets.
+
+This is the first step to creating a Domain-specific Language; establishing how our ''words''(or in this case numbers) are written.
+
+As for why it's written the way it is, Haskell demands that each custom datatype has some sort of identifier so it'll know that it's dealing with a Complex number, and not just any old combination of doubles. We chose the word ''Complex'' to accomplish this.
+
+Second, why did we choose to put our doubles in brackets? To help explain how we're actually going to use Complex Numbers going forwards(for the most part, anyway). Behold, the Argand diagram!
+
+TODO: Coordinate/Argand pic goes here.
+
+..Or as us non-mathematicians would call it; some bloody coordinates. Note how we wrote our datatype to imitate how coordinates are usually written. We are very smart.
+
+% TODO: figure out how to break up the text in Latex
+
+For our first operator, let's just create a set of functions that extract the real and imaginary parts of the Complex number. As you can see, the ''real'' numbers exist along the X-axis, and the imaginary ones exist along the Y-axis. As such:
+\begin{code}
+whatsReal :: Complex -> double
+whatsReal Complex (real,_) = real
+
+whatsImaginary :: Complex -> double
+whatsImaginary Complex (_,ima) = ima
+\end{code}
+Once again, there's a couple things to unpack.
+
+First, each function comes in two parts. The first tells us which datatypes the function handles. In this case, both take a Complex number(as defined above), and returns a double. The second part details how the function actually works.
+
+This is in turn broken up into a few parts. First, the name of the function. Second, the input. Third, the return value.
+
+Note how, rather than merely state that we're taking a Complex number, we copy the entire structure of said datatype. This allows us to name and use each individual part of the datatype, making the function incredibly simple. We're looking for the value of one of the doubles, so let's just return that. This is why we needed to so clearly define what a Complex number is supposed to look like. If they were arbitrary, how would we know beforehand which scribbles we are interested in?
+
+The underscore(''\_'') roughly translates to "whatevah'". It is our way of telling Haskell that we simply do not care about that value.
+
+% TODO: figure out how to break up the text in Latex
+
+Now that we have a basic grasp of Haskell and our custom datatype/DSL, it's time to add our first proper operator: Addition. Please look at the picture below.
+
+TODO: Add picture of two coordinates being added together here.
+
+This is the first instance of our coordinated thinking making calculation easy. We can clearly see that to add two Complex numbers together, we simple add reals to reals, and imagination to imagination. To Wit:
+\begin{code}
+add :: Complex -> Complex -> Complex
+add Complex (r1,i1) Complex (r2,i2) = Complex (ri+r2,i1+i2)
+\end{code}
+Easy enough. The only thing that can be a bit tricky is the declaration, that is, the part that explains how the function handles datatypes. We are now dealing with three datatypes; two inputs and one output. How does Haskell know that we're not asking for one input and two outputs? Simple. Haskell does not allow for more than one output, and will thus treat any additional values other than the final one as additional inputs. The full explanation has something to do with how Haskell functions on a mechanical level and is super complicated. Let's just agree it's confusing and move on, m'kay?
+
+Next Let's add subtraction. It works the exact same way as addition.
+\begin{code}
+subtract :: Complex -> Complex -> Complex
+subtract Complex (r1,i1) Complex (r2,i2) = Complex (r1-r2,i1-i2)
+
+sub :: Complex -> Complex -> Complex
+sub complex1 complex2 = subtract complex1 complex2
+\end{code}
+This time, since writing down ''subtract'' every time we want to subtract values gets very tedious, very quickly, we added a shortened version at the end. This was clearly for convenience alone and not at all to showcase how functions can be strung together, or how flexible the input system is, allowing us to freely alter our desired complexity on a dime.
+
+Obviously. Anything else would just be silly.
+
+% TODO: figure our how to break up the text in Latex
+
+Now, let's move on to the main reason why we chose to define our datatype to mimic coordinates. No, it wasn't to simplify addition and subtraction. That was just a bonus.
+
+The real reason is that it allows us to use complex numbers to express geometry. To do this, we'll need two core functions. First off, the absolute value.
+
+Note that, since complex numbers exist on a plane rather than a line, we can't just turn them positive and call it a day. Instead, we'll have to call upon our good old friend Pythagoras:
+
+TODO: Add picture of complex pythagoras here.
+
+\begin{code}
+absolute :: Complex -> double
+absolute Complex (real,ima) = root ((real*real)+(ima*ima))
+
+abs :: Complex -> double
+abs complex = absolute complex
+\end{code}
+Once again, we took the liberty of creating a shortened version as well. Oh, and since powers always result in positive values, there's no need to worry about whether the values started out positive or negative.
+Let's move on to arguments, aka. angles.
+
+TODO: Write a segment on arguments, aka. angles.
+
+These two functions, with their powers combined, form an alternate way to express the ''position'' of a Complex number; by expressing the direction and distance from origo, or true zero. The later sections will have a field day exploring the possibilities of this..
+
+% TODO: figure out how to break up the text in Latex
+
+There is one final function that awaits us; one final operator: multiplication!
+
+..
+
+Ok, might not sound like much, but there's a reason why we're tackling it last.
+
+Can you tell us how to multiply two Complex numbers, based on what we've been talking about so far?
+
+..
+
+Right, thought not.
+
+The simple truth of the matter is, we can't. Each Domain-specific Language is, as the name suggests, only meant to express one domain. Our chosen domain was geometry, and we chose to express our Complex numbers as coordinates to aid with that.
+
+That does not mean we can't build a function to multiply two Complex numbers, but it does mean we'll have to apply some actual *gasp* MATH to accomplish it.
+
+To wit, multiplying two Complex numbers works the same way as multiplying any other multi-part numbers. We multiply each combination of terms separately, and add their results together:
+
+TODO: Add a picture explaining basic multiplication.
+
+As we can see, we're stuck with an annoying complication; we've got one term containing $i^2$. How will we make that work with how we've defined our datatype? We never added a way to write powers! % TODO: prettify i^2
+
+Ach, if only there was a convenient comment regarding the definition of i that we brought up at the beginning of this section and fully expect you to have forgotten about.
+
+TODO: Add a cheeky picture referring back to the definition of i :)
+
+Oh wait, there is just such a thing! $i^2$ is the same as -1! We can now complete our final function and also operator.
+
+\begin{code}
+multiply :: Complex -> Complex -> Complex
+multiply Complex (r1,i1) Complex (r2,i2)
+  = Complex (r1*r2-i1*i2,r1*i2+r2*i1)
+\end{code}
+Feel free to create a shortened version yourself this time. We'd do it for you, but we can't think of a fitting function name that doesn't sound silly.
+
+% TODO: figure out how to break up text in Latex
+
+As noted at the very top, complex numbers are an entire field of study, and if we were to cover all there is to know about them, this section would take up a small library worth of text and require an actual budget to write. The above should be just enough to give a basic understanding of the concept, along with all associated operators used in the sections below. Just remember that the coordinate comparison, while undeniably useful, does not apply to every possible operation and you'll do fine.
 
 
-
-
+\iffalse %% OLD %%
 \begin{code}
 data Complex = Complex (double, double)
   deriving Eq
@@ -40,3 +180,4 @@ multiply Complex (r1,i1) Complex (r2,i2)
   = Complex (r1*r2-i1*i2,r1*i2+r2*i1)
 
 \end{code}
+\fi
