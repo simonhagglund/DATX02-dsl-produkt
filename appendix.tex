@@ -9,6 +9,80 @@
     \hline 
      $a f(t) + b g(t)$ & $a F(s) + b G(t)$\\
      \hline 
+     $f'(t)$ & $s F(s) - f(0)$ \\
+     \hline 
+     $e^{\alpha t}$ & $\frac{1}{s-\alpha}$\\
+     \hline 
 \end{tabular}
     \label{tab:laplacetrans}
 \end{table}
+
+
+\section{Analysis (/Calculus?)} 
+\todo[inline,color=other]{Added some preliminary tables for analysis, maybe we wanna write something more?}
+\subsection{Types}
+\textbf{TODO:} 
+\begin{itemize}
+    \item Type of derivative, integral 
+    \item Higher order functions? (+, $\cdot$, \dots)
+\end{itemize}
+
+\subsection{Derivatives}
+
+\begin{table}[h!]
+    \centering
+    \caption{Derivatives}
+    \begin{tabular}{|c|c|}
+    \hline 
+         $f(x)$ & $f'(x)$ \\
+    \hline 
+         $x^a$ & $ax^{a-1}$ \\
+         $e^x$ & $e^x$ \\
+         $e^{kx}$ & $ke^{kx}$ \\
+         $a^{x}$ & $a^x \ln a $ \\
+         $\sin x$ & $\cos x$ \\
+         $\cos x$ & $-\sin x$ \\
+         $\tan x$ & $\frac{1}{\sin} x$ \\
+         $\arcsin x$ & $\frac{1}{\sqrt{1-x^2}}$ \\
+         $\arccos x$ & $-\frac{1}{\sqrt{1-x^2}}$\\
+         $\arctan x$ & $\frac{1}{1+x^2}$
+         \\ \hline
+    \end{tabular}
+    \label{tab:derivatives}
+\end{table}
+
+\subsection{Partial derivatives}
+
+\subsection{Integrals} 
+\begin{table}[h!]
+    \centering
+    \caption{Integrals}
+    \begin{tabular}{|c|c|}
+    \hline 
+         $f(x)$ & $F(x)$ \\
+    \hline 
+         $x^a$       & $\frac{x^{a+1}}{a+1}$ \\
+         $e^x$       & $e^x$ \\
+         $e^{kx}$    & $\frac{e^{kx}}{k}$ \\
+         $a^{x}$     & $\frac{a^x}{\ln a}$ \\
+         $\sin x$    & $-\cos x$ \\
+         $\cos x$    & $\sin x$ \\
+         $\tan x$    & $-\ln \abs{\cos x}$ \\
+         $\arcsin x$ & $x \arcsin x + \sqrt{1-x^2}$ \\
+         $\arccos x$ & $x \arccos x + \sqrt{1-x^2}$ \\
+         $\arctan x$ & $\frac{1}{2} \left[2x \arctan x - \ln (1 + x^2)\right]$
+         \\ \hline
+    \end{tabular}
+    \label{tab:integrals}
+\end{table}
+
+\section{Code}\label{sec:appcode}
+\subsection{}\label{sec:appcodezipwithl}
+\begin{code}[caption={Extension of \texttt{zipWith}. If lists are equal in length \texttt{zipWithL} and \texttt{zipWith} are identical. When one list has exhausted their elements, \texttt{i} is used instead}. \texttt{zipWithL k f [a0,a1,a2] [b0,b1,b2,b3,b4]} becomes \texttt{[a0 `f` b0, a1 `f` b1, a2 `f` b2, i `f` b3, i `f` b4].}]
+--       null-val zip-function   left   right  zipped
+zipWithL :: a -> (a -> a -> b) -> [a] -> [a] -> [b]
+zipWithL i f (l:left) (r:right) = f l r : zipWithL i f left right
+zipWithL _ _ []       []        = []
+zipWithL i f []       (r:right) = f i r : zipWithL i f []   right
+zipWithL i f (l:left) []        = f l i : zipWithL i f left []
+\end{code}

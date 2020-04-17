@@ -3,11 +3,12 @@
 
 (1 + L(s)) unstable if 0.
 
-To decide if a system is stable or not Nyquist theorem of stability can be used. If the transfer function is unstable, L(s) got poles in the right plane, Nyquist complete theorem is used. When we are looking for poles, we surround(bör ändras) the part we want to investigate. In Haskell we map all these values to the transfer function. If we want to look at the entire right half of our plane, we surround the right field with an infinite big circle.
+To decide if a system is stable or not Nyquist theorem of stability can be used. If the transfer function (ska lägga till formel för trans. func) is unstable, i.e L(s) got poles in the right plane, Nyquist complete theorem is used. When we are looking for poles, we surround(bör ändras) the part we want to investigate(ska lägga till bild för förklaring). We map all these values to the transferfunction L(s). In Haskell we can use the map function to accomplish this. The result will be a Nyqvist plot. We can ues this plot to decide some properties about our system. We can use the plot to decide if our system got poles inside the surrounded area. With Nyqvist complete theorem we surround the entire right half plane to see if we got poles on the right plane. We surround the plane with a semicircle with a infinitive radius.
 \hrule
 (Lägg till bilden på mappningen här)
 \hrule
-But since we can’t compute a function with an infinitive big input, we can focus on four important values. When w=0, w=inf, w when we cross the real axis and w when we cross the imaginary axis. This will be enough for the most basic transfer functions.
+Since we can’t compute a function with an infinitive big input on our computers, we can focus on four important values. When w=0, w=inf, w when we cross the real axis and w when we cross the imaginary axis. This will be enough for the most basic transfer functions. (Lägg till bilden för förenklade)
+
 
 För att avgöra om att system är stabilt kan Nyqvist kriterium användas. Om kretsöverförningen är stabil används Nyqvist förenklade kriterium om inte så används Nyqvist fullständiga kriterium. Fördelen med Nyqvist kriterium är att man kan avgöra om det slutna systemet är stabilt baserat på det öppna systemet.
 

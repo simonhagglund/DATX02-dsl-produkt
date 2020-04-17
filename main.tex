@@ -1,4 +1,4 @@
-\documentclass%[final]%removes todos
+\documentclass%[final]%removes todos & new/mod color
 {article}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -17,22 +17,48 @@
 \usepackage{array, booktabs}
 \usepackage{graphicx}
 \usepackage[x11names,table]{xcolor}
-\usepackage{caption}
+\usepackage[margin=1cm]{caption}
 \usepackage[TS1,T1]{fontenc}
 \usepackage[obeyFinal]{todonotes}
 \usepackage{ifthen}
 \usepackage{tocloft}
+\usepackage{transparent}
 \usepackage{amsmath,amssymb,amsfonts,amsthm}
 \usepackage{mathrsfs}
+\usepackage{tikz}
+    \usetikzlibrary{shapes,arrows}
+\usepackage{ifdraft}
 \usepackage{hyperref}
+\usepackage{physics} % some convenient commands, for example \abs for absolute value, \dd for differential 
+%\usepackage{mathabx} % For convolution asterisks; do we use this? Clash with physics 
 \usepackage{subfiles} % Ladda denna sist.
 %\usepackage{parskip}
 
+%%%% TIKZ
+\tikzstyle{block} = [draw, %fill=blue!20, rectangle, 
+    minimum height=3em, minimum width=6em, rounded corners]
+\tikzstyle{sum} = [draw, %fill=blue!20, 
+    circle, node distance=1cm]
+\tikzstyle{input} = [coordinate]
+\tikzstyle{output} = [coordinate]
+\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+%%%%
+
+%%%% code number set/reset
+\def\LNContinue{\lstset{firstnumber=last}}
+\def\LNReset{\lstset{firstnumber=1}}
+%%%%
+
+\newcounter{codecount}
+
 \usepackage{xcolor}
 \usepackage{listings}
+\renewcommand{\lstlistingname}{Code} % Changes captions of code blocks to start with "Code #: " instead of "Listing #: "
+\renewcommand{\lstlistlistingname}{List of \lstlistingname s} % Related to above line. (Probably not needed)
 \lstloadlanguages{Haskell}
-\lstnewenvironment{code}{
-    \lstset{language=Haskell,
+\lstnewenvironment{code}[1][]{\lstset{#1}}{}
+    \lstset{ % Global options
+    language=Haskell,
     %basicstyle=\ttfamily,
     %keywordstyle=\color{blue},
     %backgroundcolor=\color{gray}
@@ -49,11 +75,11 @@
     stringstyle=\mdseries\rmfamily,
     showspaces=false,
     keywordstyle=\bfseries\rmfamily,
-    columns=flexible,
+    %columns=flexible, % this line made the code not be monospace. Do we want it still? 
     basicstyle=\small\rmfamily,
     showstringspaces=false,
     morecomment=[l]\%,    
-}}{}
+}
 
 \lstnewenvironment{codeeq}{ % I tried something, not sure whether to keep it 
     \lstset{language=Haskell,
@@ -61,10 +87,10 @@
     %keywordstyle=\color{blue},
     %backgroundcolor=\color{gray}
     %frame=single,
-    %backgroundcolor=\color{lightgray},
+    backgroundcolor=\color{white},
     xleftmargin=50pt,
     %stepnumber=1,       % the step between two line-numbers. If it's 1, each line will be numbered
-    %numbers=left,
+    numbers=none,
     %numbersep=10pt,     % how far the line-numbers are from the code
     %numberstyle=\rmfamily\scriptsize\color[gray]{0.3}, %font,size,color{0=black, 1= white}
     captionpos=b,
@@ -73,12 +99,17 @@
     stringstyle=\mdseries\rmfamily,
     showspaces=false,
     keywordstyle=\bfseries\rmfamily,
-    columns=flexible,
+    %columns=flexible,
     %basicstyle=\small\rmfamily,
     showstringspaces=false,
     morecomment=[l]\%,    
 }}{}
 
+
+%%%%
+\newenvironment{newtext}{\ifoptionfinal{}{\color{Green4}}}{\ignorespacesafterend}
+\newenvironment{modtext}{\ifoptionfinal{}{\color{Khaki4}}}{\ignorespacesafterend}
+%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -113,12 +144,15 @@
 
 %%%%% New commands 
 
-\newcommand{\Lplc}{\mathscr{L}}
+\newcommand{\Lplc}{\mathscr{L}} % laplace transform 
+\newcommand{\Ast}{\circledast} % convolution symbol
+\newcommand{\lc}[2]{\ensuremath{\lambda #1 \mapsto #2}} % lambda calculus
 
 
 %%%%% Temporary example environment
 \theoremstyle{definition} % non-italic text in examples
 \newtheorem{example}{Example}
+\newtheorem*{solution}{Solution}
 
 
 
@@ -145,7 +179,7 @@
   
 \author{
     Filip Nylander \and
-    \vspace*{0.001pt}
+    %\vspace*{0.001pt}
     Jakob Fihlman \and 
     Christian Josefson \and 
     Elin Ohlman \and 
@@ -197,9 +231,9 @@ Proposed colour coding for todo notes. TR
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subfile{complexnumbers}
+\subfile{control} 
 \subfile{laplacetransform} 
 \subfile{transferfunctions}
-\subfile{control} 
 \subfile{nyqvist} 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
