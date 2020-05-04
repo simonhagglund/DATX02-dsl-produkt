@@ -1,21 +1,5 @@
 \section{Table of Laplace transforms}
 % very much work in progress 
-\begin{table}[h!]
-    \centering
-    \caption{Laplace Transforms and rules}
-\begin{tabular}{|c | c|}
-    \hline 
-     f(t) & F(s) \\
-    \hline 
-     $a f(t) + b g(t)$ & $a F(s) + b G(t)$\\
-     \hline 
-     $f'(t)$ & $s F(s) - f(0)$ \\
-     \hline 
-     $e^{\alpha t}$ & $\frac{1}{s-\alpha}$\\
-     \hline 
-\end{tabular}
-    \label{tab:laplacetrans}
-\end{table}
 
 
 \section{Analysis (/Calculus?)} 
@@ -78,11 +62,31 @@
 
 \section{Code}\label{sec:appcode}
 \subsection{}\label{sec:appcodezipwithl}
-\begin{code}[caption={Extension of \texttt{zipWith}. If lists are equal in length \texttt{zipWithL} and \texttt{zipWith} are identical. When one list has exhausted their elements, \texttt{i} is used instead}. \texttt{zipWithL k f [a0,a1,a2] [b0,b1,b2,b3,b4]} becomes \texttt{[a0 `f` b0, a1 `f` b1, a2 `f` b2, i `f` b3, i `f` b4].}]
+\begin{codefig}
+\begin{minted}{haskell}
 --       null-val zip-function   left   right  zipped
 zipWithL :: a -> (a -> a -> b) -> [a] -> [a] -> [b]
 zipWithL i f (l:left) (r:right) = f l r : zipWithL i f left right
 zipWithL _ _ []       []        = []
 zipWithL i f []       (r:right) = f i r : zipWithL i f []   right
 zipWithL i f (l:left) []        = f l i : zipWithL i f left []
-\end{code}
+\end{minted}
+\caption{Extension of \cmd{zipWith}. If lists are equal in length \cmd{zipWithL} and \cmd{zipWith} are identical. When one list has exhausted their elements, \cmd{i} is used instead. \cmd{zipWithL k f [a0,a1,a2] [b0,b1,b2,b3,b4]} becomes \cmd{[a0 `f` b0, a1 `f` b1, a2 `f` b2, i `f` b3, i `f` b4].}}
+%\label{code:}
+\end{codefig}
+
+\subsection{}\label{sec:appcodemaxfreq}
+\begin{codefig}
+\begin{minted}{haskell}
+maxfreq :: (Ord a, Num a) => Signal a -> a
+maxfreq (Sin _ f _) = f
+maxfreq (Scale _ a) = maxfreq a
+maxfreq (Deriv   a) = maxfreq a
+maxfreq (Integ   a) = maxfreq a
+maxfreq (Sum a b) | af < bf   = bf
+                  | otherwise = af where
+                    af = maxfreq a
+                    bf = maxfreq b
+\end{minted}
+\caption{\cmd{maxfreq} is a helper function on the \cmd{Signal} data type for the function \cmd{simplifySignal} (see code snippet \ref{code:simplifycont}). It returns the maximal frequency found in the given \cmd{Signal} expression tree defined by \cmd{Sum} constructors as tree nodes and \cmd{Sin} as leaves.}
+\end{codefig}

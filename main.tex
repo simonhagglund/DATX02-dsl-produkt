@@ -32,7 +32,8 @@
 \usepackage{physics} % some convenient commands, for example \abs for absolute value, \dd for differential 
 %\usepackage{mathabx} % For convolution asterisks; do we use this? Clash with physics 
 \usepackage{subfiles} % Ladda denna sist.
-%\usepackage{parskip}
+\usepackage{parskip}
+\usepackage{minted} % Highlights code.
 
 %%%% TIKZ
 \tikzstyle{block} = [draw, %fill=blue!20, rectangle, 
@@ -45,14 +46,17 @@
 %%%%
 
 %%%% code number set/reset
-\def\LNContinue{\lstset{firstnumber=last}}
-\def\LNReset{\lstset{firstnumber=1}}
+%\def\LNContinue{\lstset{firstnumber=last}}
+%\def\LNReset{\lstset{firstnumber=1}}
+\def\LNContinue{\setminted{firstnumber=last}}
+\def\LNReset{\setminted{firstnumber=1}}
 %%%%
 
 \newcounter{codecount}
 
 \usepackage{xcolor}
 \usepackage{listings}
+\renewcommand\listingscaption{Code} % Same as below, but for new environment with "minted"
 \renewcommand{\lstlistingname}{Code} % Changes captions of code blocks to start with "Code #: " instead of "Listing #: "
 \renewcommand{\lstlistlistingname}{List of \lstlistingname s} % Related to above line. (Probably not needed)
 \lstloadlanguages{Haskell}
@@ -105,6 +109,13 @@
     morecomment=[l]\%,    
 }}{}
 
+%%%%% Minted 
+\setminted{bgcolor=black!10, linenos}
+\setmintedinline{bgcolor={}}
+
+% env to surround minted with to add caption and label
+\newenvironment{codefig}{\captionsetup{type=listing}}{}
+\setlength{\abovecaptionskip}{-2pt plus 3pt minus 2pt}
 
 %%%%
 \newenvironment{newtext}{\ifoptionfinal{}{\color{Green4}}}{\ignorespacesafterend}
@@ -126,7 +137,7 @@
 
 \hypersetup{
     colorlinks=true,
-    linkcolor=blue,
+    linkcolor=orange,
     filecolor=magenta,      
     urlcolor=cyan,
 }
@@ -146,13 +157,16 @@
 
 \newcommand{\Lplc}{\mathscr{L}} % laplace transform 
 \newcommand{\Ast}{\circledast} % convolution symbol
-\newcommand{\lc}[2]{\ensuremath{\lambda #1 \mapsto #2}} % lambda calculus
+\newcommand{\lc}[2]{\ensuremath{%\lambda 
+#1 \mapsto #2}} % lambda calculus
+\newcommand{\cmd}[1]{\mintinline{haskell}{#1}} % for typesetting commands
 
 
 %%%%% Temporary example environment
 \theoremstyle{definition} % non-italic text in examples
 \newtheorem{example}{Example}
 \newtheorem*{solution}{Solution}
+\newtheorem{exercise}{Exercise}
 
 
 
