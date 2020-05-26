@@ -1,67 +1,8 @@
-\section{Table of Laplace transforms}
+%\section{Table of Laplace transforms}\label{sec:applap}
 % very much work in progress 
 
-
-\section{Analysis (/Calculus?)} 
-\todo[inline,color=other]{Added some preliminary tables for analysis, maybe we wanna write something more?}
-\subsection{Types}
-\textbf{TODO:} 
-\begin{itemize}
-    \item Type of derivative, integral 
-    \item Higher order functions? (+, $\cdot$, \dots)
-\end{itemize}
-
-\subsection{Derivatives}
-
-\begin{table}[h!]
-    \centering
-    \caption{Derivatives}
-    \begin{tabular}{|c|c|}
-    \hline 
-         $f(x)$ & $f'(x)$ \\
-    \hline 
-         $x^a$ & $ax^{a-1}$ \\
-         $e^x$ & $e^x$ \\
-         $e^{kx}$ & $ke^{kx}$ \\
-         $a^{x}$ & $a^x \ln a $ \\
-         $\sin x$ & $\cos x$ \\
-         $\cos x$ & $-\sin x$ \\
-         $\tan x$ & $\frac{1}{\sin} x$ \\
-         $\arcsin x$ & $\frac{1}{\sqrt{1-x^2}}$ \\
-         $\arccos x$ & $-\frac{1}{\sqrt{1-x^2}}$\\
-         $\arctan x$ & $\frac{1}{1+x^2}$
-         \\ \hline
-    \end{tabular}
-    \label{tab:derivatives}
-\end{table}
-
-\subsection{Partial derivatives}
-
-\subsection{Integrals} 
-\begin{table}[h!]
-    \centering
-    \caption{Integrals}
-    \begin{tabular}{|c|c|}
-    \hline 
-         $f(x)$ & $F(x)$ \\
-    \hline 
-         $x^a$       & $\frac{x^{a+1}}{a+1}$ \\
-         $e^x$       & $e^x$ \\
-         $e^{kx}$    & $\frac{e^{kx}}{k}$ \\
-         $a^{x}$     & $\frac{a^x}{\ln a}$ \\
-         $\sin x$    & $-\cos x$ \\
-         $\cos x$    & $\sin x$ \\
-         $\tan x$    & $-\ln \abs{\cos x}$ \\
-         $\arcsin x$ & $x \arcsin x + \sqrt{1-x^2}$ \\
-         $\arccos x$ & $x \arccos x + \sqrt{1-x^2}$ \\
-         $\arctan x$ & $\frac{1}{2} \left[2x \arctan x - \ln (1 + x^2)\right]$
-         \\ \hline
-    \end{tabular}
-    \label{tab:integrals}
-\end{table}
-
 \section{Code}\label{sec:appcode}
-\subsection{}\label{sec:appcodezipwithl}
+%\label{sec:appcodezipwithl}
 \begin{codefig}
 \begin{minted}{haskell}
 --       null-val zip-function   left   right  zipped
@@ -72,10 +13,10 @@ zipWithL i f []       (r:right) = f i r : zipWithL i f []   right
 zipWithL i f (l:left) []        = f l i : zipWithL i f left []
 \end{minted}
 \caption{Extension of \cmd{zipWith}. If lists are equal in length \cmd{zipWithL} and \cmd{zipWith} are identical. When one list has exhausted their elements, \cmd{i} is used instead. \cmd{zipWithL k f [a0,a1,a2] [b0,b1,b2,b3,b4]} becomes \cmd{[a0 `f` b0, a1 `f` b1, a2 `f` b2, i `f` b3, i `f` b4].}}
-%\label{code:}
+\label{sec:appcodezipwithl}
 \end{codefig}
 
-\subsection{}\label{sec:appcodemaxfreq}
+%\label{sec:appcodemaxfreq}
 \begin{codefig}
 \begin{minted}{haskell}
 maxfreq :: (Ord a, Num a) => Signal a -> a
@@ -89,4 +30,377 @@ maxfreq (Sum a b) | af < bf   = bf
                     bf = maxfreq b
 \end{minted}
 \caption{\cmd{maxfreq} is a helper function on the \cmd{Signal} data type for the function \cmd{simplifySignal} (see code snippet \ref{code:simplifycont}). It returns the maximal frequency found in the given \cmd{Signal} expression tree defined by \cmd{Sum} constructors as tree nodes and \cmd{Sin} as leaves.}
+\label{sec:appcodemaxfreq}
 \end{codefig}
+
+\begin{codefig}
+\caption{\cmd{ComplexNumbers}, a DSL for complex numbers, which is used as a building block for the Laplace transform. Made by \cite{tssarbete}, with slight modifications by us to ensure it fit our DSL in \ref{sec:complex}.}
+\label{code:complex}
+\begin{code}
+module ComplexNumbers where
+import GHC.Real
+
+type R = Double
+
+-- Komplexa tal kan ses som ett par av reella värden.
+
+data Complex = Complex (R, R)
+    deriving Eq
+
+-- Där första komponenten representerar realdelen och den andra komponenten
+-- imaginärdelen.
+
+realPart :: Complex -> R
+realPart (Complex (re, im)) = re
+
+imPart :: Complex -> R
+imPart (Complex (re, im)) = im
+
+conjugate :: Complex -> Complex
+conjugate z = Complex ((realPart z), (negate (imPart z)))
+
+{-
+   Argumentet av ett komplext tal.
+   Bökigt värre på grund av tråkiga kvadranter och bös,
+   men genom att använda funktionen atan2 så blir det mycket snyggare!
+-}
+
+arg :: Complex -> R
+arg z = atan2 (imPart z) (realPart z)
+
+{-
+   Utan atan2 hade vi fått skriva så här:
+
+   arg :: Complex -> R
+   arg z  | (imPart z) < 0  && (realPart z) < 0 = atan (imPart z / realPart z) - pi
+          | (realPart z) < 0                    = atan (imPart z / realPart z) + pi
+          | otherwise                           = atan (imPart z / realPart z)
+
+-}
+
+scale :: R -> Complex -> Complex
+scale a z = Complex ((a * realPart z), (a * imPart z))
+
+{-
+   j är det komplexa talet med realdelen 0 och imaginärdelen 1
+   Många matematiktexter kallar detta talet också för `i`
+-}
+
+j :: Complex
+j = Complex (0, 1)
+
+-- TODO: Försök få   read . printComplex = id genom att göra printComplex
+-- enklare
+-- TODO: "name and reuse" something like showIm im = show im ++ "j" to make it
+-- easy to change the spacing (or change "j" to "i", or the type from String
+-- to ShowS) in only one place
+
+instance Show Complex where
+    show = printComplex
+
+printComplex :: Complex -> String
+printComplex z
+  | r == 0    = imj
+  | im == 0   = show r
+  | im < 0    = show r ++ "-" ++ show (abs im) ++ "j"
+  | otherwise = show r ++ "+" ++ imj
+    where im  = imPart z
+          r   = realPart z
+          imj
+            | im == 0  = "0"
+            | otherwise = show im ++ "j"
+
+-- | Skapar ett komplext tal utifrån en vinkel.
+euler :: R -> Complex
+euler phi = Complex ((cos phi), (sin phi))
+
+instance Num Complex where
+-- Plus är förhållandevist trivialt
+  z + w = Complex ((realPart z + realPart w), (imPart z + imPart w))
+
+-- Multiplikationen följer ifrån att vi multiplicerar komponenterna
+-- parvis med varandra (i likhet med (a+b) * (c+d))
+  z * w = Complex ((realZ*realW - imZ*imW), (realZ*imW + realW*imZ))
+    where realZ = realPart z
+          realW = realPart w
+          imZ   = imPart z
+          imW   = imPart w
+
+-- Negationen av ett komplext tal är ett komplext tal där båda komponenter är negerade
+
+  negate z = Complex ((negate $ realPart z), (negate $ imPart z))
+
+-- Den naturliga generaliseringen av signum från reella till komplexa tal:
+
+  signum z = z / abs z
+
+-- Absolutbeloppet av ett komplext tal är pythagoras sats på dess komponenter.
+
+  abs z = Complex (hyp, 0)
+    where hyp  = sqrt (r*r + im*im)
+          r    = realPart z
+          im   = imPart z
+
+-- Heltal är bara komplexa tal utan imaginärdel
+
+  fromInteger n = Complex (fromInteger n, 0)
+
+instance Fractional Complex where
+-- Division utförs genom att man förlänger hela bråket med nämnarens konjugat
+  z / w = Complex (realPart zw' / realPart ww', imPart zw' / realPart ww')
+    where zw' = z * (conjugate w)
+          ww' = w * (conjugate w)
+
+-- En kvot av två heltal är helt reell och därför kommer imaginärdelen vara 0
+  fromRational z = Complex (re, 0)
+    where re = fromInteger (numerator z) / fromInteger (denominator z)
+
+instance Floating Complex where
+-- Det komplexa talet pi är ett tal med realdelen pi och imaginärdelen 0
+  pi = Complex (pi, 0)
+
+{-
+   Potenslagarna ger att e^(a+bj) <=> e^a * e^bj och
+   Eulers formel ger att e^bj <=> cos b + jsin b
+-}
+  exp z = scale (exp (realPart z)) (euler (imPart z))
+
+{-
+   Eulers formel ger att man kan skriva om sin x som (e^jx - e^-jx)/2j
+   Eftersom vi definerat exponentialfunktionen för komplexa tal kan vi använda
+   eulers formel som vår sinus implementation för komplexa tal
+-}
+  sin z = (exp (j*z) - exp (-(j*z)))/(scale 2 j)
+
+-- Eulers formel ger att man kan skriva om cos x som (e^jx + e^-jx)/2
+  cos z = (exp (j*z) + exp (-(j*z)))/2
+
+  cosh z = Complex (cosh (realPart z) * cos (imPart z),
+                    sinh (realPart z) * sin (imPart z))
+
+  sinh z = Complex (sin (realPart z) * cosh (imPart z),
+                    cos (realPart z) * sinh (imPart z))
+
+{-
+   Eulers formel ger att z = re^(j*phi) och eftersom log och exponentialfunktionen
+   är varandras inverser och logaritmlagarna ger ex. `log (a*b)` <=> `log a + log b`.
+   Därför kan vi skriva log `z = log r + log (e^(j*phi))` = `log r + j*phi`
+-}
+  log z = Complex (logR (abs z), arg z)
+    where logR = log . realPart
+
+{-
+  Funktioner vi troligen / förhoppningsvis inte kommer behöva och som vi därför lämnar
+  odefinierade än så länge.
+-}
+  atanh = undefined
+  atan  = undefined
+  asinh = undefined
+  asin  = undefined
+  acosh = undefined
+  acos  = undefined
+\end{code}
+\end{codefig}
+
+
+\begin{codefig}
+\caption{Expression datatype.} \label{code:expression-datatype}
+\begin{code}
+data Expression a where
+  Const      :: a -> Expression a
+  Id         :: Expression a
+  Impulse    :: Expression a
+  Pi         :: Expression a
+  (:+:)      :: Expression a -> Expression a -> Expression a 
+  (:*:)      :: Expression a -> Expression a -> Expression a 
+  (:-:)      :: Expression a -> Expression a -> Expression a 
+  (:/:)      :: Expression a -> Expression a -> Expression a
+  Conv       :: Expression a -> Expression a -> Expression a
+  Shift      :: a -> Expression a 
+  Negate     :: Expression a
+  Exp        :: Expression a
+  Sin        :: Expression a
+  Cos        :: Expression a
+  Tan        :: Expression a
+  Asin       :: Expression a
+  Acos       :: Expression a
+  Atan       :: Expression a
+  Integral   :: Expression a -> a -> Expression a -- function and initial value, i.e. int_y0^t f(x) dx 
+  Derivative :: Expression a -> a -> Expression a -- function and initial value, i.e. f' and f(0)
+ deriving (Eq, Show)
+\end{code}
+\end{codefig}
+
+%\iffalse 
+% för slutredovisning 
+\begin{code}
+data Expr x where
+  Id         :: Expr a 
+  Const      :: x         -> Expr x 
+  --            f         -> f(0) -> f' 
+  Derivative :: Expr x    -> x    -> Expr x
+  ... 
+\end{code}
+
+\begin{code}
+  Expression         %\textrm{Matematik}% 
+  Id                 %$f(x) = x$%
+  Const c            %$f(x) = c$%
+  Derivative e e0    %\textrm{Derivatan av} e \textrm{med initialvärde} e0%
+  
+\end{code}
+
+
+%\fi 
+
+
+\begin{codefig}
+\caption{Function \cmd{eval}. Takes a syntactic representation and turns it into a semantic function.}\label{code:eval-def}
+\begin{code}
+shift :: Num a => a -> (a -> a) -> (a -> a)
+shift tau f = \t -> f (t-tau)
+
+eval :: (Num a, Floating a, Eq a) => Expression a -> a -> a
+eval (Const c)           = \t -> c
+eval Id                  = id
+eval Impulse             = undefined -- TODO
+eval Pi                  = eval (Const pi)
+eval (e1 :+: e2)         = eval e1 + eval e2
+eval (e1 :*: e2)         = eval e1 * eval e2
+eval (e1 :-: e2)         = eval e1 - eval e2
+eval (e1 :/: e2)         = eval e1 / eval e2
+eval (DefInteg e1 e2 e3) = undefined -- TODO
+eval (Conv       e1 e2)  = undefined -- TODO
+eval (Shift tau e)       = \t -> (shift tau) (eval e) t -- shifts e by tau, i.e. begins after tau seconds
+eval (Negate e)          = negate (eval e)
+eval (Exp e)             = exp    (eval e)
+eval (Sin e)             = sin    (eval e)
+eval (Cos e)             = cos    (eval e)
+eval (Tan e)             = tan    (eval e)
+eval (Asin e)            = asin   (eval e)
+eval (Acos e)            = acos   (eval e)
+eval (Atan e)            = atan   (eval e)
+eval (Integral   e e0)   = undefined -- TODO
+eval (Derivative e e0)   = undefined -- TODO
+\end{code}
+\end{codefig}
+
+
+
+\begin{codefig}
+\todo[inline]{Note: I'm not certain the Shift:s are correct or whether there should be a
+  negate there somewhere, thus I've done TODO:s on all I'm not sure get the
+  correct sign. Also, this is still in development, needs cleanup.} ~\\
+\caption{Definition of \cmd{laplace}, the Laplace transform of an \cmd{Expression}.}\label{code:laplace-def}
+\begin{code}
+-- rules
+laplace :: Expression Complex -> Expression Complex -- TODO: maybe instead do Time->Freq
+laplace (e1 :+: e2) = laplace e1 :+: laplace e2 -- Superposition
+laplace (e1 :-: e2) = laplace e1 :+: Negate (laplace e2) -- special case of superposition
+laplace (Const a :*: e) = Const a :*: laplace e -- scaling
+laplace (Negate e) = Negate (laplace e) -- can be seen as scaling with -1 as well
+laplace (Derivative e e0) = Id :*: laplace e :-: (Const e0) -- L {f'} = \s -> s * L {f} - f(0)
+laplace (Integral e e0) = laplace e :/: Id -- L {int_0^t f(x) dx} = s -> L {f} /s 
+laplace (Shift tau e) = Exp (Id :*: Const tau) :*: laplace e -- TODO: double check signs
+  -- TODO: double check signs on next two
+laplace (Exp (Const tau :*: Id) :*: e) = Shift (negate tau) (laplace e) -- semantically same as next one
+laplace (Exp (Negate (Const tau :*: Id)) :*: e) = Shift tau (laplace e)
+laplace (Conv e1 e2) = laplace e1 :*: laplace e2 -- convolution turns into multiplication
+-- transforms
+laplace (Impulse) = Const 1 -- L {delta(t)} = \s -> 1
+laplace (Const a) = Const a :/: Id -- L {a} = \s -> a/s; a = 1 => L {1} = 1/s
+laplace (Id)      = Const 1 :/: (Id :*: Id) -- L {t} = \s -> 1/(s^2)
+laplace (Exp (Negate (Const a :*: Id))) = Shift (negate a) (Const 1 :/: Id)-- TODO: Check signs
+laplace (Exp (Const a :*: Id)) = Shift a (Const 1 :/: Id)-- TODO: Check signs
+laplace (Const 1 :-: Exp (Negate (Const a :*: Id))) = Const a :/: (Id :*: Shift a Id) -- TODO: Doublecheck signs. Also, is this necessary?
+
+laplace (Exp Id) = laplace (Exp (Const 1 :*: Id))
+-- ... some more special cases, not sure we care?
+-- TODO: Doublecheck signs on the next two
+laplace (Exp (Negate (Const a :*: Id)) :*: Sin (Const omega :*: Id)) = Const omega :/: (Shift a (Id :*: Id) :+: (Const (omega*omega)))
+laplace (Exp (Negate (Const a :*: Id)) :*: Cos (Const omega :*: Id)) = (Shift a Id) :/: (Shift a (Id :*: Id) :+: (Const (omega*omega)))
+\end{code}
+\end{codefig}
+
+%The following code contains functions that print out an Expression in more human readable code. It's lightly adapted from \cite{TSSarbete}.
+% \begin{code}
+% -- -- | Show instance for Showable Expressions
+% -- instance Show a => Show (Expression a) where
+% --          show = showE
+% 
+% showE :: (Show a) => Expression a -> String
+% showE exp = "f(var) = " ++ showExp exp
+% 
+% showExp :: (Show a) => Expression a -> String
+% showExp (Const a)   = show a
+% showExp Id          = "id(var)"
+% showExp Pi          = "pi"
+% showExp Impulse     = "delta(var)"
+% showExp (Exp e)     = "e^(" ++ showExp e ++ ")"
+% showExp (Sin e)     = "sin (" ++ showExp e ++ ")"
+% showExp (Negate exp) = "-" ++ showExp exp 
+% showExp (e0 :*: e1) = showCompExps e0 ++ "" ++ showCompExps e1
+% showExp (e0 :+: e1) = showCompExps e0 ++ " + " ++ showCompExps e1
+% showExp (e0 :-: e1) = showCompExps e0 ++ " - " ++ showCompExps e1
+% showExp (e0 :/: e1) = showCompExps e0 ++ " / " ++ showCompExps e1
+% showExp (Conv e0 e1) = showCompExps e0 ++ " * " ++ showCompExps e1
+% showExp (Shift offset exp) = showExpWithOffset offset exp
+% 
+% -- | Composed Expressions needs to be enclosed in a pair of parens
+% showCompExps :: (Show a) => Expression a -> String
+% showCompExps (e0 :+: e1) = "(" ++ showCompExps e0 ++ " + " ++ showCompExps e1 ++ ")"
+% showCompExps (e0 :-: e1) = "(" ++ showCompExps e0 ++ " - " ++ showCompExps e1 ++ ")"
+% showCompExps (e0 :*: e1) =  "(" ++ showCompExps e0 ++ ")(" ++ showCompExps e1 ++ ")"
+% showCompExps (e0 :/: e1) = "(" ++ showCompExps e0 ++ " / " ++ showCompExps e1 ++ ")"
+% showCompExps exp         = showExp exp
+% 
+% showExpWithOffset :: (Show a) => a -> Expression a -> String
+% showExpWithOffset offset Id      = "(var - " ++ show offset ++ ")"
+% showExpWithOffset offset Impulse = "delta(var - " ++ show offset ++ ")"
+% showExpWithOffset _ Pi           = "pi"
+% showExpWithOffset _ (Const a)    = show a
+% showExpWithOffset offset exp     = showExp (traverseExpE (Shift offset) exp)
+% 
+% traverseExpE e (e0 :*: e1) = (e e0) :*: (e e1)
+% traverseExpE e (e0 :+: e1) = (e e0) :+: (e e1)
+% traverseExpE e (e0 :-: e1) = (e e0) :-: (e e1)
+% traverseExpE e (e0 :/: e1) = (e e0) :/: (e e1)
+% traverseExpE e exp         = e exp
+% 
+% -- | Minimerar en Expression datatyp tills tva minimeringar returernar
+% -- samma värde
+% minE :: (Num a, Eq a) => Expression a -> Expression a
+% minE e
+%      | e == e' = e
+%      | otherwise = minE e'
+%      where e' = minE' e
+% 
+% -- | Minimerar en Expression-datatyp genom att ta bort onödiga termer.
+% minE' :: (Num a, Eq a) => Expression a -> Expression a
+% minE' (e :*: Const 1) = minE' e
+% minE' (Const 1 :*: e) = minE' e
+% minE' (Const a :*: Const b) = Const (a * b)
+% minE' (e0 :*: e1) = minE' e0 :*: minE' e1
+% minE' (e :*: Const 0) = Const 0
+% minE' (Const 0 :*: e) = Const 0
+% minE' (e :/: Const 1) = minE' e
+% minE' (Const 1 :/: e) = minE' e
+% minE' (e0 :/: e1) = minE' e0 :/: minE' e1
+% 
+% minE' (Const a :+: Const b) = Const (a+b)
+% minE' (e :+: Const 0) = minE' e
+% minE' (Const 0 :+: e) = minE' e
+% minE' (e0 :+: e1) = minE' e0 :+: minE' e1
+% minE' (e :-: Const 0) = minE' e
+% minE' (Const 0 :-: e) = minE' e
+% minE' (e0 :-: e1) = minE' e0 :-: minE' e1
+% 
+% minE' (Shift 0 e) = minE' e
+% minE' (Exp (Const 0)) = Const 1
+% minE' (Negate (Negate e)) = minE' e
+% minE' (Negate e) = Negate (minE' e)
+% minE' (Exp e) = Exp (minE' e)
+% minE' (Sin e) = Sin (minE' e)
+% minE' (Cos e) = Cos (minE' e)
+% minE' expr = expr
+% \end{code}

@@ -175,8 +175,9 @@ data Signal a where
   Scale :: a -> Signal a -> Signal a
   Deriv :: Signal a -> Signal a
   Integ :: Signal a -> Signal a
-deriving instance Eq a => Eq (Signal a)
+    deriving instance Eq a => Eq (Signal a)
 \end{minted}
+\todo{fix deriving}
 It should now be possible to take any Signal instance and simplify it to a single Sin constructor. Or, at least as long as frequencies match. But this is okay since an LTI system cannot change the frequency of a sine function.
 \begin{minted}{haskell}
 simplifySignal :: (Num a, Eq a, Floating a, Ord a) => Signal a -> Signal a
@@ -254,7 +255,7 @@ evalSignal sig@(Integ a)   t = evalSignal (simplifySignal sig) t
 \subsection{Combining Transfer Functions}\label{sec:comb}
 Since the LTI-functions are not endofunctions (i.e. are not functions \textit{on} a set), they cannot be composed. So how do we combine several transfer functions in a larger system? To understand that, we first have to understand exactly what a transfer function is describing:
 
-The LTI system is by definition time-invariant, so functions are not directly expressed in time, though, they vary with time. They are not expressed as a function of their input signal (but rather with their time-varying LTI-function), so how does it vary with input signal? The basic idea is that its LTI-function, $f(t)$, expresses the ``impulse response'' of the system, i.e. the output signal given an instantaneous impulse as input (the dirac delta function $\delta$). Any other input to the system has to be convoluted with the system function (defined in \ref{sec:convol}. 
+The LTI system is by definition time-invariant, so functions are not directly expressed in time, though, they vary with time. They are not expressed as a function of their input signal (but rather with their time-varying LTI-function), so how does it vary with input signal? The basic idea is that its LTI-function, $f(t)$, expresses the ``impulse response'' of the system, i.e. the output signal given an instantaneous impulse as input (the dirac delta function $\delta$). Any other input to the system has to be convoluted with the system function (which was defined in \ref{sec:convol}). 
 The LTI-function is defined this way because $\delta$ is the identity of the convolution operator---in other words:
 \begin{codeeq}
 (dirac |*|) == (id :: (Time -> Signal) -> (Time -> Signal))
@@ -415,10 +416,98 @@ de = LCDE ([2,3],[-1,0,1]) :: Fractional a => LCDE a
 tf2 = evalRE $ findTF de
 \end{minted}
 
-\ifoptionfinal{}{
-\subsection{Step Response}
+\subsection{Combining Systems}\label{sec:combsys}
+
+We previously talked about combining transfer functions of LTI systems (see \ref{sec:comb}). Let's now abstract away any details of transfer functions and focus on them as atomic blocks.
+In the code below, we represent a transfer function with a string name (like \cmd{TF "G"}).
+\begin{code}
+data LTI where
+  TF :: String -> LTI
+\end{code}
+There are a few ways of combining systems. First, recall (see \ref{sec:tftypes}) how systems can be simply fed into each other. As a nod to the block diagrams, we now label this with an arrow:
+\begin{code}
+  (:->) :: LTI -> LTI -> LTI
+\end{code}
+A signal may also be fed into two (or more) other systems:
+\begin{code}
+  (:-<) :: LTI -> (LTI, LTI) -> LTI
+\end{code}
+Lastly, a signal may be combined, either by adding or subtracting a signal. To simplify matters, we will only consider adding signals, since a signal could be negated with a transfer function.
+\begin{code}
+  (:>-) :: (LTI, LTI) -> LTI -> LTI
+\end{code}
+On the semantic end, recall how connecting two control systems together will multiply their transfer functions. The function \cmd{evalLTI} below takes a dictionary of transfer functions and evaluates the LTI data type to its transfer function.
+\begin{code}
+evalLTI :: (String -> (C -> C)) -> LTI -> (C -> C)
+evalLTI dict (TF s) = dict s
+evalLTI dict (a :-> b) = \z -> evalLTI dict a z * evalLTI dict b z
+\end{code}
+Bringing two signals together as one input into another system, we add them first, so we have:
+\begin{code}
+evalLTI dict ((a, b) :>- c) = \z -> (evalLTI dict a z + evalLTI dict b z) * evalLTI dict c z
+\end{code}
+When splitting signals, we will run into a problem. We currently only allow for one output, so there is no way to evaluate a system like \cmd{sys = a :-< (sys, b)} without complicating matters. Instead we're just going to rely on the two other operators to define our systems.
+\begin{code}
+evalLTI _ (_ :-< _) = undefined
+\end{code}
+
+Let's try a couple of system definitions:
+first, consider the open-loop system defined by the block diagram from figure \ref{fig:tfex}.
+\begin{code}
+testSys1 = TF "G" :-> TF "H"
+\end{code}
+Evaluating this with \cmd{evalLTI} will as expected yield the product of the functions given as definitions for G and H:
+\begin{codeeq}
+evalLTI d testSys1 == \z -> (z-2)/(z-3) where
+  d "G" = \z -> 1/(z-3)
+  d "H" = \z -> (z-2)
+\end{codeeq}
+Let's now try to define a closed-loop system. Consider the following system:
+\missingfigure[]{
+CL system\\
+--→[H]-→o--→[G]----→\\
+\hspace{4.2em}↑---[S]←-|
 }
-\todo[inline,color=other]{necessary?}
+We can define it in the following way, even though it looks like there is a \cmd{:-<} in the diagram.
+\begin{code}
+testSys2 = (TF "H", testSys2) :>- TF "G"
+\end{code}
+Note that we can't evaluate this system with evalLTI, since it's recursively defined, but it will compile, so for the benefit of demonstration this is fine.
+
+In order to evaluate also closed-loop systems, we would either have to simulate the system, or programmatically solve an equation.
+
+Instead, we will step through the evaluation ...
+\transparent{.5}
+\begin{codeeq}
+h, g :: C -> C
+h = undefined; g = undefined
+d "H" = h
+d "G" = g
+\end{codeeq}
+\transparent{1}
+\begin{codeeq}
+evalLTI d testSys2 
+== evalLTI d ((TF "H", testSys2) :>- TF "G")
+== \z -> (evalLTI d (TF "H") z + evalLTI d testSys2 z) * evalLTI d (TF "G") z
+== \z -> (h z + evalLTI d testSys2 z) * g z
+\end{codeeq}
+Thus far, we have only expanded the expression with the definition of the evaluation function. Now we have to do a small bit of algebra in order to find what \cmd{testSys2} evaluates to:
+\begin{codeeq}
+evalLTI d testSys2 == \z -> (h z + evalLTI d testSys2 z) * g z
+evalLTI d testSys2 == \z -> h z * g z + evalLTI d testSys2 z * g z
+\z -> evalLTI d testSys2 z - evalLTI d testSys2 z * g z == \z -> h z * g z
+\z -> evalLTI d testSys2 * (1 - g z) == \z -> h z * g z
+evalLTI d testSys2 == \z -> h z * g z / (1 - g z)
+\end{codeeq}
+
+
+If we take a look again at how we semantically defined \cmd{:->} and \cmd{:>-}, we can notice how these only add and multiply transfer functions. In the closed-loop example above, the result had only multiplication, addition, and their inverse operators, division and subtraction. We can by this see that it's not a far stretch to assume a combined (by these operators) system's transfer function can always be written as a fraction of sums of products of transfer functions (yes, a bit of a mouthful). And, indeed, this is the case (for any transfer function)!
+\begin{equation*}
+    \text{G} = \frac{A_1*A_2*...+B_1*B_2*...+...}{A'_1*A'_2*...+B'_1*B'_2*...+...}
+\end{equation*}
+
+
+\todo[inline]{The point of this section is to make the point that all LTI systems' (or control systems' rather) TF are of the form P(s)/Q(s) where P and Q are sum(prod(TFs)).}
 
 
 \LNReset

@@ -5,17 +5,18 @@
 % Imports.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\usepackage[left=3cm,top=3cm,right=3cm,nofoot]{geometry} %avstånd till kanter
-\usepackage{a4wide}
+%\usepackage[left=4.5cm,top=4.5cm,right=4.5cm,nofoot]{geometry}% Kopierad från rapporten, med de här inställningarna blir namnen tre per rad ist för 4 och 2
+\usepackage[left=3cm,top=3cm,right=3cm]{geometry} %avstånd till kanter
+%\usepackage{a4wide}
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
+\usepackage{subcaption}
 \usepackage{float}
 \usepackage{csquotes}
 \usepackage{comment}
 \usepackage{biblatex}
 \usepackage{array, booktabs}
-\usepackage{graphicx}
 \usepackage[x11names,table]{xcolor}
 \usepackage[margin=1cm]{caption}
 \usepackage[TS1,T1]{fontenc}
@@ -56,34 +57,38 @@
 
 \usepackage{xcolor}
 \usepackage{listings}
+
 \renewcommand\listingscaption{Code} % Same as below, but for new environment with "minted"
 \renewcommand{\lstlistingname}{Code} % Changes captions of code blocks to start with "Code #: " instead of "Listing #: "
 \renewcommand{\lstlistlistingname}{List of \lstlistingname s} % Related to above line. (Probably not needed)
 \lstloadlanguages{Haskell}
-\lstnewenvironment{code}[1][]{\lstset{#1}}{}
-    \lstset{ % Global options
-    language=Haskell,
-    %basicstyle=\ttfamily,
-    %keywordstyle=\color{blue},
-    %backgroundcolor=\color{gray}
-    %frame=single,
-    backgroundcolor=\color{lightgray},
-    xleftmargin=20pt,
-    stepnumber=1,       % the step between two line-numbers. If it's 1, each line will be numbered
-    numbers=left,
-    numbersep=10pt,     % how far the line-numbers are from the code
-    numberstyle=\rmfamily\scriptsize\color[gray]{0.3}, %font,size,color{0=black, 1= white}
-    captionpos=b,
-    tabsize=2,
-    commentstyle=\it,
-    stringstyle=\mdseries\rmfamily,
-    showspaces=false,
-    keywordstyle=\bfseries\rmfamily,
-    %columns=flexible, % this line made the code not be monospace. Do we want it still? 
-    basicstyle=\small\rmfamily,
-    showstringspaces=false,
-    morecomment=[l]\%,    
-}
+\newminted[code]{haskell}{}
+\newminted[code']{haskell}{}
+
+% \lstnewenvironment{code}[1][]{\lstset{#1}}{}
+%     \lstset{ % Global options
+%     language=Haskell,
+%     %basicstyle=\ttfamily,
+%     %keywordstyle=\color{blue},
+%     %backgroundcolor=\color{gray}
+%     %frame=single,
+%     backgroundcolor=\color{lightgray},
+%     xleftmargin=20pt,
+%     stepnumber=1,       % the step between two line-numbers. If it's 1, each line will be numbered
+%     numbers=left,
+%     numbersep=10pt,     % how far the line-numbers are from the code
+%     numberstyle=\rmfamily\scriptsize\color[gray]{0.3}, %font,size,color{0=black, 1= white}
+%     captionpos=b,
+%     tabsize=2,
+%     commentstyle=\it,
+%     stringstyle=\mdseries\rmfamily,
+%     showspaces=false,
+%     keywordstyle=\bfseries\rmfamily,
+%     %columns=flexible, % this line made the code not be monospace. Do we want it still? 
+%     basicstyle=\small\rmfamily,
+%     showstringspaces=false,
+%     morecomment=[l]\%,    
+% }
 
 \lstnewenvironment{codeeq}{ % I tried something, not sure whether to keep it 
     \lstset{language=Haskell,
@@ -110,7 +115,7 @@
 }}{}
 
 %%%%% Minted 
-\setminted{bgcolor=black!10, linenos}
+\setminted{bgcolor=black!10, linenos, escapeinside=\%\%}
 \setmintedinline{bgcolor={}}
 
 % env to surround minted with to add caption and label
@@ -139,7 +144,7 @@
     colorlinks=true,
     linkcolor=orange,
     filecolor=magenta,      
-    urlcolor=cyan,
+    urlcolor=blue,
 }
 
 % Adds choice for hiding stuff when we are in a writing phase. 
@@ -156,9 +161,11 @@
 %%%%% New commands 
 
 \newcommand{\Lplc}{\mathscr{L}} % laplace transform 
+\newcommand{\conv}{\Ast}
 \newcommand{\Ast}{\circledast} % convolution symbol
-\newcommand{\lc}[2]{\ensuremath{%\lambda 
-#1 \mapsto #2}} % lambda calculus
+%\newcommand{\lc}[2]{\ensuremath{%\lambda 
+\newcommand{\lc}[2]{#1 \mapsto #2}
+\newcommand{\fcn}[2]{#1 \mapsto #2}
 \newcommand{\cmd}[1]{\mintinline{haskell}{#1}} % for typesetting commands
 
 
@@ -169,6 +176,10 @@
 \newtheorem{exercise}{Exercise}
 
 
+% ToC depth
+\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{4}
+\newcommand{\subsubsubsection}[1]{\paragraph{#1}\mbox{}\vspace{2mm}\\}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -184,21 +195,30 @@
 % Learning Material for Control Theory with Domain-Specific Languages?
 % Demystifying syntax and semantics of control theory.  
 % Controlling Education through Domain Specific Languages 
-\title{Demystifying the Syntax and Semantics of Control Theory
+\title{{\Huge Domain-specific languages of Control~Theory}
 \vspace*{5.5mm}
 % (Using Domain-specific Languages?)
-\\ {\Large Developing course material using \\ Domain-Specific Languages} 
-\vspace*{85mm}
+\\ {\Large - A supplementary learning material for ERE103} 
+
+\vspace*{10mm}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale= 0.5]{Images/dusch.png}
+\end{figure}
+\vspace*{10mm}
 }
   
 \author{
-    Filip Nylander \and
+    
     %\vspace*{0.001pt}
-    Jakob Fihlman \and 
+    Jakob Fihlman \and
+    \vspace*{0.001pt}
+    Simon Hägglund \and 
     Christian Josefson \and 
+    Filip Nylander \and
     Elin Ohlman \and 
-    Tommy Räjert \and 
-    Simon Hägglund
+    Tommy Räjert 
+    
     }
 \bigskip
 \date{\vspace*{5mm} Spring - 2020} % unless anyone comes up with anything better 
@@ -244,11 +264,15 @@ Proposed colour coding for todo notes. TR
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subfile{complexnumbers}
-\subfile{control} 
-\subfile{laplacetransform} 
+\subfile{prerequisites}
+
+%\subfile{laplacetransform} 
+\subfile{laplace-rewrite}
 \subfile{transferfunctions}
-\subfile{nyqvist} 
+\subfile{nyquist_t}
+\transparent{.5}
+%\subfile{nyqvist}
+\transparent{1}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -259,7 +283,5 @@ Proposed colour coding for todo notes. TR
 \newpage
 \appendix
 \subfile{appendix}
-\listoffigures
-\listoftables
 
 \end{document}

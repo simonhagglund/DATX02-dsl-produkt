@@ -1,0 +1,127 @@
+\begin{newtext}
+\section{Stability}
+Determining the stability in a system is important for a number of applications. How do we ascertain a system will not react uncontrollably to some input? Will a certain system come to an equilibrium or rapidly diverge? 
+
+We have a pretty good intuition for what stability is, but to give a more formal definition: a system is said to be stable if for some bounded input if also the output will remain bounded. Technically, by this definition, a system may act unstable given an impulse input ($\delta(t)$) since this signal isn't bounded, but in practise this does not pose a problem because we can't produce unbounded signals in reality.
+
+There are several methods for determining system stability, which are all useful in different cases. These methods include Bode plots, the root locus method, the Routh-Hurwitz criterion, and the Nyquist criterion. In the next section we will study this last method in detail.
+
+\subsection{The Nyquist Criterion of Stability}
+The Nyquist criterion uses the location of zeroes and poles in the transfer function of a system in order to determine stability. In order to locate these poles and zeroes, ``Cauchy's argument principle'' is used. As this is key to understand the Nyquist criterion, we will take a closer look at what it states in a little bit.
+%To explain the Nyquist criterion we must start with Cauchy's argument principle. This principle is used to find the difference between the number of poles and zeroes inside some closed contour.
+
+Nyquist states that if all poles in a system's transfer function lies in the negative half of the complex number plane (i.e. real part of $z<0$), the system is stable. Let's take a look at why this is the case.
+
+As shown in section \ref{sec:combsys}, a control system can always be expressed as a fraction of two transfer functions. \todo{Write somewhere about OL and CL, I think}The question about poles of a system's transfer function can therefore be rephrased as a question about zeroes in the transfer function in the denominator.
+
+Let's first define a transfer function by its poles and zeroes in the following way:
+\begin{code}
+--                             zeros poles
+data TransferFunc = TransferFunc [C] [C]
+\end{code}
+\begin{equation*}
+    \text{TransferFunc}([z_0,z_1,...]; [p_0,p_1,...])=\frac{(s-z_0)(s-z_1)...}{(s-p_0)(s-p_1)...}
+\end{equation*}
+\LNContinue
+As the poles do not change when multiplying the function by some bounded function (we assume the fraction is reduced, i.e. nothing like (s-1)(s-2)/(s-1)), \cmd{TransferFunc a b} is equivalent to \cmd{TransferFunc [] b} in terms of where poles are. Recall the fact that a fraction of the form $\frac{1}{ab}$ can be written $\frac{A}{a}+\frac{B}{b}$. %Also notice how \cmd{a * TransferFunc c d} has the same poles and zeroes as \cmd{TransferFunc c d}.
+In the following pseudocode, let \cmd{f ~== g} denote that functions f and g have the same poles (not zeroes).
+\begin{codeeq}
+TransferFunc [] [b0,b1,...] ~== TransferFunc [] [b0] + TransferFunc [] [b1] + ...
+TransferFunc [] [b0] + TransferFunc [] [b1] + ... == laplace $ \t -> exp (-t*b0) + exp (-t*b1)+...
+\end{codeeq}
+%(Refer to appendix \ref{sec:applap} for $\mathcal{L}^{-1}$)\\
+
+Notice how \cmd{\t -> exp (-t*bx)} is exponential decay. This is to say that when \cmd{t} is large, the signal tends to 0. Crucially, this is only true when bx (denoting b0, b1, etc.) is not negative. If bx would be negative, then the function would be exponentially increasing instead, which would be an unstable system. (If bx would be 0, then the function would be constant 1). Since b are the poles of \cmd{TransferFunc [] b}, we see that system stability is equivalent to whether the poles of the system's transfer function lies in the negative half of the complex plane. To understand how to determine this, let's now take a look at Chauchy's arguement principle.
+\missingfigure[]{Figure showing exponential decay (if useful and not already included in \ref{sec:decay})}
+
+\todo[inline]{this is exponential decay iff re(b)<0, so it is stable}
+
+
+This theorem uses a the notion of a contour to relate movement around poles and zeroes and movement around the origin, so we must first be clear about what a contour is: 
+
+\subsubsection{Contours}
+
+Think of a contour as all of the values along a closed loop in the complex plane (in generality not limited to the complex plane; a contour may be on any (multidimensional) sheet). For example, consider the unit circle in the complex plane, centered at the origin. We might mathematically describe this contour by the set of point's unit distance from the origin: $\left\{z\in\mathbb{C} : |z|=1\right\}$. 
+\missingfigure[]{unit circle contour?}
+Since $\mathbb{C}$ is not only infinite in size, but \textit{uncountably} infinite (meaning elements cannot be listed, even with infinite terms/time), we cannot accurately represent this in Haskell---even with infinite lists. What we can do, though, is approximate it in Haskell (with finite or infinite lists). In the code below, \cmd{cos} and \cmd{sin} are used to trace out the unit circle, and \cmd{d} specifies the distance between consecutive points. When $d\rightarrow\infty$ \cmd{ucContour} tends to \textit{an approximation} of the unit circle contour.
+\begin{code}
+ucContour :: R -> [C]
+ucContour d = [C (cos (2*pi*k//n)) (sin (2*pi*k//n)) | k<-[0..n]] where
+  n = floor (2*pi/d)
+  a // b = fromIntegral a / fromIntegral b
+\end{code}
+Let's now define a more general function for contours, that will take a list of points and then subdivide this into an approximated contour of specified accuracy. We start with defining \cmd{subdiv} as a function that subdivides one such segment (defined by two complex numbers):
+\begin{code}
+(*&) :: R -> C -> C
+c *& C r i = C (c * r) (c * i)
+infixl 7 *& -- same as *
+
+subdiv :: R -> (C, C) -> [C]
+subdiv d (a, b) = [ a + n *& seg | n <- [1..nseg]] where
+  len = re.abs $ b - a
+  nseg = fromIntegral.floor $ len / d
+  seg = (d / len) *& (b - a)
+\end{code}
+Now, we use this helper function to define \cmd{contourAng}. (This function will function in a similar manner to the polygon lasso in Photoshop).
+\begin{code}
+
+contourAng :: R -> [C] -> [C]
+contourAng dist points = concatMap (subdiv dist) $ pairs ps where
+  ps = points ++ [head points]
+  pairs (a:b:cs) = (a,b) : pairs (b:cs)
+  pairs [_]      = []
+\end{code}
+\missingfigure[]{This \textit{could} be illustrated by an image of a polygonal contour}
+We can use this function as \todo[inline,noinlinepar,inlinewidth=3cm]{explain function}.
+
+\subsubsection{Cauchy's Argument Principle}
+\todo[inline]{Cauchy and contour mapping (see code on github in play/tommy) (this will probably be lengthy)}
+
+
+%According Cauchy's we start by mapping each value on our contour to our function and create a new plot (works exactly the same as Haskell's map). This new plot will, among other properties, show us the difference between poles and zeroes. Depending on how many times the plot surround the origin, and in which direction, we can get information about the poles and zeroes. Let me show you with a picture.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale= 0.4]{Images/sw.PNG}
+    \caption{Mapping all of our values to create the plot}
+    \label{Cauchy}
+\end{figure}
+
+%Inside our contour we got four zeroes and tree poles. After we map all the values in the contour the plot in the w-plane is created. The plot surrounds the origin one time clockwise. This tells us that we got one more zero than pole inside our contour. If the plot was counterclockwise we would have had more poles than zeroes instead.
+
+\subsubsection{Nyquist theorem}
+\todo[inline]{Tie together with N=Z-P}
+%Nyquist theorem will use this principle to find out if a system i stable or not. The Nyquist theorem is graphical technique and will result in a Nyquist plot. In the case of the a closed loop system the transfer function is defined as
+
+%\begin{equation*}
+%F(s) \ (1 + F(s)H(s))
+%\end{equation*}
+
+%That means if our denominator is equal to zero our system is unstable. That would be bad news!
+
+%To solve this we want to find out if we got any zeros in our right half plane. Therefore we surround our entire right half plane with a contour with infinite radius. We could map all these values to our denominator 
+%\begin{equation*}
+%1 + F(s)H(s)
+%\end{equation*}
+
+%but instead we are going to map our values to \begin{equation*}
+%F(s)H(s)
+%\end{equation*}
+
+%to make our lives easier. The will result of this will is the Nyquist plot. Since we removed our +1 we a going to count the encirclements around -1 instead of the origin. In the picture you can take a look at this.
+
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale= 0.4]{Images/nykv.PNG}
+    \caption{Mapping all of our values from our Nyquist contour to create the Nyquist plot}
+    \label{Nyqvist}
+\end{figure}
+
+%Unfortunately this will only give us the difference between the number of zeroes and poles. To solve this will will utilise the equation $Z = N + P$. Where Z is the number of zeroes, N the number of clock wise encirclements and P is the number of poles in the open loop. In other words Nyquist let us solve the closed-loop system with some help from the open-loop system.
+
+
+%This is how a Nyquist plot is created and what i tell us about a transfer function. But since neither we or Haskell's map function can't compute with a infinite large input we have to find a way around this. We can instead focus on four important points and get a non-continuous plot. w=0, w=inf, w when we cross the real axis and w when we cross the imaginary axis. This will be enough for the most basic transfer functions you will see in the course.
+
+
+\end{newtext}
