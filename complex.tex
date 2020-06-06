@@ -1,16 +1,17 @@
 \graphicspath{ {./Images/} }
 
 \section{Prerequisites}
-This section is dedicated to refreshing your understanding of key concepts that are not technically part of control theory, but are nonetheless necessary in order to understand it. In addition, this section includes some basic instructions of how DSLs work in practice.
+This section is dedicated to refresh your understanding of key concepts that are not technically part of control theory, but are nonetheless necessary in order to understand it. In addition, this section 
+serves to introduce the DSL way of thinking about mathematical concepts so that you may get comfortable with the idea before moving on to the more difficult subjects control theory contains. %includes some basic instructions of how DSLs work in practice.
 
-These subjects are only touched upon on a very basic level, thus if you are already feeling confident about them, this section can be safely skipped.
+These subjects are only touched upon on a very basic level, thus if you are already feeling confident about them, this section can safely be skipped.
 
 \subsection{Complex numbers}\label{sec:complex}
 \iffalse
 Här är målet främst att introducera dsl som koncept och även introducera hur vi behandlar komplexa tal eftersom detta kommer återkomma mycket i texten. Vi gör detta genom att snabbt repetera komplexa tal. Vi antar dock att läsaren egentligen är bekväm med komplexa tal och att detta istället är en mjukstart för dsl, haskell och våra egna betäckningar.\\
 \fi
 
-In short, the complex numbers are an extension of the real numbers in the same way that the real numbers are an extension of the rational numbers. With the reals, we saw the addition of a number of constants(e, $\pi$, etc.).
+In short, the complex numbers are an extension of the real numbers in the same way that the real numbers are an extension of the rational numbers. With the reals, we saw the addition of a number of constants (e, $\pi$, etc.).
 This time around, we add imaginary numbers.
 
 First, some technicalities. The complex numbers are built on the real numbers, but the real numbers are unfortunately not very easily implementable in computers. In reality we have to approximate. In order to avoid this problem, we're going to introduce a type synonym: 
@@ -19,12 +20,12 @@ First, some technicalities. The complex numbers are built on the real numbers, b
 type R = Double 
 \end{minted}
 
-Now, whenever we want something to be a real number, we can use the type \cmd{R}. Type synonyms are just that --- synonyms --- so whenever you see \cmd{R} throughout the text you could exchange it with \cmd{Double} and get the exact same result. We hope you see the reason in using \cmd{R}, however. 
+Now, whenever we want something to be a real number, we can use the type \cmd{R}. Type synonyms are just that---synonyms---so whenever you see \cmd{R} throughout the text you could exchange it with \cmd{Double} and get the exact same result. We hope you see the reason in using \cmd{R}, however. 
 %Note that the doubles are inherently inaccurate; they cannot provide more than an approximation of most non-integers(I.E. 2/3, e, $\pi$, etc.). Since we are more concerned with understanding the process than getting a strictly accurate answer, however, this simplification is quite alright.
 
 \subsubsection{The Complex Number Concept}
 So what are imaginary numbers? 
-In short, imaginary numbers are a way to solve some equations that are otherwise impossible to solve. For example, if we wanted to find a root to -1 we'd need to use imaginary numbers. 
+In short, imaginary numbers are a way to solve some equations that are otherwise impossible to solve. For example, if we wanted to find a square root to -1 we'd need to use imaginary numbers. 
 
 %In short, imaginary numbers are the pet project of some scientist who really really wanted a root to -1. This then turned into an entire field of study.
 
@@ -32,7 +33,7 @@ Let's start with the definition:
 \begin{align*}
     i = \sqrt{-1},
 \end{align*}
-or put otherwise, 
+and as a consequence, 
 \begin{align*}
     i^2 = -1.
 \end{align*}
@@ -51,21 +52,21 @@ data Complex = Complex (R, R)
 \begin{example}
 Write the complex number $2+3i$ in \cmd{Complex}.
 \end{example}
-\begin{solution} ~\\ 
-\begin{minted}{haskell}
+\begin{solution} %~\\ 
+\begin{minted}[xleftmargin=60px,linenos=false]{haskell}
 z = Complex (2,3)
 \end{minted}
 \end{solution}
 
-This is the first step to creating a domain-specific language: establishing how our `words' (or in this case numbers) are written. We create a data type called \cmd{complex}, which holds a pair of values. 
+This is the first step to creating a domain-specific language: establishing how our `words' (or in this case numbers) are written. We create a data type called \cmd{Complex}, which holds a pair of values. 
 
-Now you might ask yourself: why did we choose to put our doubles in parenthesis? The answer lies in the complex plane and how complex numbers can be seen as coordinates in a diagram. For example, see the following figure:
+Now you might ask yourself: why did we choose to put our reals in parenthesis? The answer lies in the complex plane and how complex numbers can be seen as coordinates in a diagram. For example, see the following figure:
 %To help explain how we're actually going to use complex numbers going forwards (for the most part, anyway). Behold, the Argand diagram!
 
 \begin{figure}[h!]
     \centering
     \includegraphics[scale= 0.4]{Argand.png}
-    \caption{}
+    \caption{The complex number (7,6)}
     \label{argand}
 \end{figure}
 
@@ -77,7 +78,7 @@ In the picture you see a complex plane with the complex number $(7,6)$ marked. N
 
 \subsubsection{Basic Operators}
 
-For our first operators, let's just create a pair of functions that extract the real and imaginary parts of the Complex number. As can be seen in the picture above, the real numbers exist along the x-axis, and the imaginary ones exist along the y-axis. As such:
+For our first operators, let's just create a pair of functions that extract the real and imaginary parts of the complex number. As can be seen in the picture above, the real numbers exist along the x-axis, and the imaginary ones exist along the y-axis. As such:
 \begin{minted}{haskell}
 whatsReal :: Complex -> R
 whatsReal (Complex (x,y)) = x
@@ -85,34 +86,42 @@ whatsReal (Complex (x,y)) = x
 \end{minted}
 %whatsImaginary :: Complex -> Real
 %whatsImaginary (Complex (x,y)) = y
-\todo{Explain the code really shortly. }
 
 \begin{exercise}
 Implement the other function, \cmd{whatsImaginary :: Complex -> Real}. 
 \end{exercise}
 
-Well, that was easy enough. 
-\todo{add some padding }
+%% Well, that was easy enough. 
+%% \todo{add some padding }
 
 %Now, as practiced Haskellians, you might wonder what we can do with these complex numbers. So far, our datatype does not really behave like numbers -- we can't add them to each other, for example. Thus a lot of what we want to do can be seen as implementing a Num instance. 
-First, let's define the most fundamental of all math operators: addition. Please look at the picture below.
+Next, let's define the most fundamental of all math operators: addition. Please look at Figure~\ref{addition}.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[scale= 0.4]{Addition.png}
-    \caption{Addition of two complex numbers $z$ and $w$, and the resulting number $v$.}
+    \caption{Addition of two complex numbers $v$ and $w$, and the resulting number $z$.}
     \label{addition}
 \end{figure}
 
-In the picture we see the complex numbers $z, w$ and $v$. We want adding them to behave like add between two points in a graph: the result of going from the origin to one of the points and then following the other from there. For example, in \ref{addition}, we see that $v = z + w$, because we can go from the origin to $(9,2)$ and then follow $(3,6)$ from there. 
+In the picture we see three complex numbers; $v, w$ and $z$. We can also tell that $v$ and $w$ can be interpreted as paths leading from the origin(0,0) to their respective values.
+
+Under this interpretation, adding complex numbers together can be interpreted as putting two paths back to back; either adding $v$ to $w$(lower path), or $w$ to $v$(upper path), in order to reach a third value($z$).
+
+We can also tell that the resulting answer($z$) has an imaginary component equal to the sum of the imaginary components in $v$ and $w$(6+2), and a real component equal to the sum of the real components in $v$ and $w$(3+9). This is something we can implement directly into our DSL; we'll simply add reals to reals, and imaginaries to imaginaries.
+
+To wit:
+
+\iffalse In the picture we see the complex numbers $z, w$ and $v$. We want adding them to behave like add between two points in a graph: the result of going from the origin to one of the points and then following the other from there. For example, in \ref{addition}, we see that $v = w + z$, because we can go from the origin to $(9,2)$ and then follow $(3,6)$ from there. 
 
 When working in rectangular form we can implement addition similar to how it works with Cartesian coordinates: add reals to reals and imaginaries to imaginaries. Since we represent our complex numbers as a pair, we only have to add the components of the pair to each other:
+\fi
 \begin{minted}{haskell}
 add :: Complex -> Complex -> Complex
 add (Complex (r1,i1)) (Complex (r2,i2)) = (Complex (r1+r2,i1+i2))
 \end{minted}
 
-Next, let's add subtraction. This works according to the same principle as addition, where real affects real and imaginary affects imaginary.   
+Let's also add subtraction. This works according to the same principle as addition; real affects real and imaginary affects imaginary, only this time with subtraction rather than addition. 
 \begin{minted}{haskell}
 sub :: Complex -> Complex -> Complex
 sub (Complex (r1,i1)) (Complex (r2,i2)) = Complex (r1-r2,i1-i2)
@@ -129,7 +138,7 @@ Note that, since complex numbers exist on a plane rather than a line, we can't j
 \begin{figure}[h!]
     \centering
     \includegraphics[scale= 0.4]{abs.png}
-    \caption{}
+    \caption{The Pythagorean theorem gives the absolute value of (10,7)}
     \label{abs}
 \end{figure}
 
@@ -140,25 +149,25 @@ absolute (Complex (real,imaginary)) = sqrt (real^2 + imaginary^2)
 Since squaring always result in positive values, there's no need to worry about whether the values started out positive or negative.\\
 Let's move on to arguments, a.k.a. angles.
 
-Pythagoras' theorem is not the only geometric rule that can be combined with complex diagrams/coordinates. In fact, all of them can. Let's do some tangents. Except when working with complex numbers, the resulting value is called an argument rather than an angle.
+The Pythagorean theorem is not the only geometric rule that can be combined with complex diagrams/coordinates. In fact, all of them can. Let's do some tangents. Except when working with complex numbers, the resulting value is called an argument rather than an angle.
 
-Unlike regular angles, however, the standard way to express a complex argument, also known as the ``Principal Argument'' does not include a complete 360degree circle from positive real to positive real. Instead, the principal argument uses two scales from the positive reals to the negative reals. One covers positive imaginary values and gives arguments ranging from 0 to $\pi$. The other covers negative imaginaries and gives arguments ranging from 0 to $-\pi$. See picture below for clarity.
+Unlike regular angles, however, the standard way to express a complex argument, also known as the ``Principal Argument'', does not include a complete 360-degree circle from positive real to positive real. Instead, the principal argument uses two scales from the positive reals to the negative reals. One covers positive imaginary parts and gives arguments ranging from 0 to $\pi$. The other covers negative imaginaries and gives arguments ranging from 0 to $-\pi$. See figure \ref{arg} below for clarity.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[scale= 0.45]{arg.png}
-    \caption{}
+    \caption{Angles vs arguments}
     \label{arg}
 \end{figure}
 
-The good news is that the arcus tangent(arctan) operator supports this split natively. The bad news is that the arcusTangent operator input only describes the depression of the line; the coefficient.
+The good news is that the arcus tangent (arctan) operator supports this split natively. The bad news is that the arctan operator input only describes the slope of the line; the coefficient.
 
 As illustrated just below, what we'll have to do is program the operator to determine which quadrant the complex number is in, and ``spin'' the resulting argument accordingly.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[scale= 0.5]{tan.png}
-    \caption{}
+    \caption{Translating arcus tangents to principal arguments}
     \label{tan}
 \end{figure}
 
@@ -170,68 +179,65 @@ argument (Complex (real,imaginary))
   | otherwise                  = atan (imaginary/real)
 \end{minted}
 
-Please note that our function is currently undefined whenever the real component is zero, due to division by zero. We could solve this with a further three lines describing specific cases for +90$^{\circ}$, -90$^{\circ}$, and true zero. In this case we chose not to in order to keep our code as clean as possible. Alternatively, we could've just used Haskells builtin version of the operator above, known as \cmd{atan2}. If we were lazy, that is. Which we are not.
-\vspace{5mm}
+Please note that our function is currently undefined whenever the real component is zero, due to division by zero. We could solve this with a further three lines describing specific cases for +90$^{\circ}$, -90$^{\circ}$, and true zero. In this case we chose not to in order to keep our code as clean as possible. Alternatively, we could've just used Haskell's builtin version of the operator above, known as \cmd{atan2}. If we were lazy, that is. Which we are not.
 
-The Absolute Value and the Principal Argument, with their powers combined, form an alternate way to express the ``position'' of a Complex number; by expressing the direction and distance from the origin. The later sections on laplace transforms and nyquist diagram will further explore the possibilities of this, but for now let's move on.
+The Absolute Value and the Principal Argument, with their powers combined, form an alternate way to express the ``position'' of a Complex number; by expressing the distance and direction from the origin. The later sections on Laplace transforms and Nyquist diagrams will further explore the possibilities of this, but for now let's move on.
 
 \subsubsection{Advanced Operators}
 
-There is one final function that awaits us; one final operator:\\ multiplication!
-..
-Ok, might not sound like much, but there's a reason why we're tackling it last.\\
-Can you tell us how to multiply two Complex numbers, based on what we've been talking about so far?\\
-..\\
-The simple truth of the matter is, we can't. Each Domain-specific Language is, as the name suggests, only meant to express one domain. Our chosen domain was geometry, and we chose to express our Complex numbers as coordinates to aid with that.
+There is one final function that awaits us; one final operator: multiplication!
+Multiplication might not sound like much compared to the geometry we just went through, but there's a reason why we chose to tackle it last. The reason is just that; it's not geometry. The specific domain of our domain specific language is geometry, and thus dealing with problems that lack an innate connection to geometry is inherently tricky.
 
 That does not mean we can't build a function to multiply two Complex numbers, but it does mean we'll have to move outside the bounds of our DSL to accomplish it.
 
-To wit; in regular math, complex numbers are normally written on the form ``a + bi'', I.E. reals + imaginaries. With that language in mind, basic algebra become a lot more intuitive. \cmd{multiply (Complex (x1,y1)) (Complex (x2,y2))}' in our DSL becomes $(x1 + y1)(x2 + y2)$. This can be solved the same way we solve any multiplication of additions; by multiplying each combination and adding the results:
+To wit; in regular math, complex numbers are normally written on the form ``a + bi'', I.E. reals + imaginaries. With that language in mind, basic algebra become a lot more intuitive. The expression \cmd{multiply} \cmd{(Complex (r1,i1))} \cmd{(Complex (r2,i2))} in our DSL becomes $(x1 + y1i)(x2 + y2i)$. This can be solved the same way we solve any multiplication of additions; by multiplying each combination and adding the results:
 
 \begin{figure}[h!]
     \centering
     \includegraphics[scale= 0.3]{mult.png}
-    \caption{}
+    \caption{Standard algebraic multiplication}
     \label{mult}
 \end{figure}
 
 As such, by cleverly switching languages, we can find solutions to problems that our current DSL struggles with.
 
-We can now define an operator in our own DSL using the information provided by traditional algebra to reach a correct answer. There is still one annoying complication remaining, however; we've got one term containing $i^2$. How will we make that work with how we've defined our datatype? We never added a way to write powers!
+We can now define an operator in our own DSL using the information provided by traditional algebra to reach a correct answer. There is still one annoying complication remaining, however; figure \ref{mult} gives us one term containing $i^2$. How will we make that work with how we've defined our datatype? We never added a way to write powers!
 
-If only there was a convenient comment regarding the definition of i that we brought up at the beginning of the section and fully expect you to have forgotten about.
+If only there was a convenient comment regarding the definition of i that we brought up at the beginning of the section and fully expect you to have forgotten about by now.
 
 \begin{figure}[h!]
     \centering
     \includegraphics[scale= 0.4]{catretrospective.png}
-    \caption{}
+    \caption{Comment regarding the definition of i that we brought up at the beginning of the section and fully expect you to have forgotten about by now}
     \label{catretro}
 \end{figure}
 
-Oh wait, there is just such a thing! $i^2$ is the same as -1! We can now complete our final function and also operator.
+Oh wait, there is just such a thing! $i^2$ is the same as $-1$! We can now complete our final function and also operator.
 
 \begin{minted}{haskell}
 multiply :: Complex -> Complex -> Complex
 multiply (Complex (r1,i1)) (Complex (r2,i2))
   = Complex (r1*r2 - i1*i2, r1*i2 + r2*i1)
 \end{minted}
-This code may look a bit overwhelming, but it's quite simple, really. We're just inserting the rule from basic algebra above, except with the final $i^2$ expression replaced with a negation, in accordance with the definition of i.
+This code may look a bit overwhelming, but it's quite simple, really. We're just inserting the rule from basic algebra above, except with the final $i^2$ expression replaced with a negation, in accordance with the definition of $i$.
 
 % \vspace{1cm}
 
 \begin{newtext}
-Now we are done with our very first DSL. It might have been quite simple, but that's sometimes all that's needed. 
-This is a fairly simple DSL. 
+Now we are done with our very first DSL. It might have been quite simple, but that's sometimes all that's needed.
 It is also an example of what we call a shallow DSL (contrasted by a deep DSL). By calling a DSL shallow we mean that the DSL has the syntax and the semantics on the same level; see \ref{sec:integrals} for an example of a deep DSL.
 
+Note that we could have chosen another way of implementing our DSL for the same domain and gotten a DSL that works well for other parts of the domain. For example, we could have used the ''absolute value + principal argument'' method mentioned in the ''complex geometry'' section. This is called the ''polar form'' and would've made the \cmd{multiply} operator a breeze, but \cmd{whatsreal}, \cmd{whatsimaginary}, \cmd{add} and \cmd{sub} would've all been much, much harder.
 
-Note that we could have chosen another way of implementing our DSL for the same domain and gotten a DSL that works well for other parts of the domain. For example, we could have represented our complex numbers using what's often called polar coordinates instead of the cartesian coordinates we chose. 
-A refresher on what polar coordinates are: one way of representing a complex number is by specifying the absolute value (often called the radius and represented by $r$ or $\rho$) and the argument (often represented by $\varphi$ or $\theta$). 
-Had we chosen this representation instead, the functions \cmd{absolute}, \cmd{argument} and \cmd{multiply} had been very easy to implement, while \cmd{whatsreal}, \cmd{whatsimaginary}, \cmd{add} and \cmd{sub} had been harder. Thus the choice of representation of a domain\footnote{In fact, we could see these two sets of functions as domains of their own. This would mean that we could develop a DSL for addition, subtraction etc. of complex numbers, which would benefit greatly from the choice of cartesian coordinates. Similarly, the choice of polar coordinates would allow us to create a DSL for multiplication etc.} can have an impact on how well the DSL works. \todo{Little uncertain where en the sentence to put the footnote.}
+%represented our complex numbers using what's often called polar coordinates instead of the cartesian coordinates we chose. 
+%A refresher on what polar coordinates are: one way of representing a complex number is by specifying the absolute value (often called the radius and represented by $r$ or $\rho$) and the argument (often represented by $\varphi$ or $\theta$). 
+%Had we chosen this representation instead, the functions \cmd{absolute}, \cmd{argument} and \cmd{multiply} had been very easy to implement, while \cmd{whatsreal}, \cmd{whatsimaginary}, \cmd{add} and \cmd{sub} had been harder. Thus the choice of representation of a domain\footnote{In fact, we could see these two sets of functions as domains of their own. This would mean that we could develop a DSL for addition, subtraction etc.~of complex numbers, which would benefit greatly from the choice of cartesian coordinates. Similarly, the choice of polar coordinates would allow us to create a DSL for multiplication etc.} can have an impact on how well the DSL works. \todo{Little uncertain where en the sentence to put the footnote.}
 \end{newtext}
 %\todo{Mention that this was a fairly shallow dsl. Write a little about how using polar coordinates would make some stuff easier and some harder, show how by giving alternative definitions of (some of?) the functions. Maybe implement it as a Num instance? }
 
-As noted at the very top, complex numbers are an entire field of study. If we were to cover all there is to know about them, this section would take up a small library worth of text and require an actual budget to write. The above should be just enough to give a basic understanding of the concept, along with all operators used in the sections below. Just remember that the coordinate comparison, while undeniably useful, does not apply to every possible operation and you'll do fine.
+As noted at the very top, complex numbers are an entire field of study. If we were to cover all there is to know about them, this section would take up a small library's worth of text and require an actual budget to write. The above should be just enough to give a basic understanding of the concept, along with all operators used in the sections below. Just remember that the coordinate comparison, while undeniably useful, does not apply to every possible operation and you'll do fine.
+
+That said, if you'd like to see a slightly more extensive version, check out the appendix.
 
 
 

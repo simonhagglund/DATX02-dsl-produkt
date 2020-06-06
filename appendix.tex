@@ -12,7 +12,7 @@ zipWithL _ _ []       []        = []
 zipWithL i f []       (r:right) = f i r : zipWithL i f []   right
 zipWithL i f (l:left) []        = f l i : zipWithL i f left []
 \end{minted}
-\caption{Extension of \cmd{zipWith}. If lists are equal in length \cmd{zipWithL} and \cmd{zipWith} are identical. When one list has exhausted their elements, \cmd{i} is used instead. \cmd{zipWithL k f [a0,a1,a2] [b0,b1,b2,b3,b4]} becomes \cmd{[a0 `f` b0, a1 `f` b1, a2 `f` b2, i `f` b3, i `f` b4].}}
+\caption{Extension of \cmd{zipWith}. If lists are equal in length \cmd{zipWithL} and \cmd{zipWith} are identical. When one list has exhausted their elements, \cmd{i} is used instead. \cmd{zipWithL k f [a0,a1,a2] [b0,b1,b2,b3,b4]} becomes \cmd{[a0 `f` b0,} \cmd{a1 `f` b1,} \cmd{a2 `f` b2,} \cmd{i `f` b3,} \cmd{i `f` b4].}}
 \label{sec:appcodezipwithl}
 \end{codefig}
 
@@ -34,9 +34,10 @@ maxfreq (Sum a b) | af < bf   = bf
 \end{codefig}
 
 \begin{codefig}
-\caption{\cmd{ComplexNumbers}, a DSL for complex numbers, which is used as a building block for the Laplace transform. Made by \cite{tssarbete}, with slight modifications by us to ensure it fit our DSL in \ref{sec:complex}.}
 \label{code:complex}
 \begin{code}
+{- DSL for complex numbers. Adapted with minor modifications from 
+   https://github.com/DSLsofMath/BScProj/ -}
 module ComplexNumbers where
 import GHC.Real
 
@@ -200,11 +201,11 @@ instance Floating Complex where
   acosh = undefined
   acos  = undefined
 \end{code}
+\caption{\cmd{ComplexNumbers}, a DSL for complex numbers, which is used as a building block for the Laplace transform. Made by \cite{tssarbete}, with slight modifications by us to ensure it fit our DSL in \ref{sec:complex}.}
 \end{codefig}
 
 
 \begin{codefig}
-\caption{Expression datatype.} \label{code:expression-datatype}
 \begin{code}
 data Expression a where
   Const      :: a -> Expression a
@@ -229,9 +230,10 @@ data Expression a where
   Derivative :: Expression a -> a -> Expression a -- function and initial value, i.e. f' and f(0)
  deriving (Eq, Show)
 \end{code}
+\caption{Expression datatype.} \label{code:expression-datatype}
 \end{codefig}
 
-%\iffalse 
+\iffalse 
 % för slutredovisning 
 \begin{code}
 data Expr x where
@@ -251,11 +253,10 @@ data Expr x where
 \end{code}
 
 
-%\fi 
+\fi 
 
 
 \begin{codefig}
-\caption{Function \cmd{eval}. Takes a syntactic representation and turns it into a semantic function.}\label{code:eval-def}
 \begin{code}
 shift :: Num a => a -> (a -> a) -> (a -> a)
 shift tau f = \t -> f (t-tau)
@@ -271,7 +272,7 @@ eval (e1 :-: e2)         = eval e1 - eval e2
 eval (e1 :/: e2)         = eval e1 / eval e2
 eval (DefInteg e1 e2 e3) = undefined -- TODO
 eval (Conv       e1 e2)  = undefined -- TODO
-eval (Shift tau e)       = \t -> (shift tau) (eval e) t -- shifts e by tau, i.e. begins after tau seconds
+eval (Shift tau e)       = shift tau (eval e) -- shifts e by tau, i.e. begins after tau seconds
 eval (Negate e)          = negate (eval e)
 eval (Exp e)             = exp    (eval e)
 eval (Sin e)             = sin    (eval e)
@@ -283,6 +284,7 @@ eval (Atan e)            = atan   (eval e)
 eval (Integral   e e0)   = undefined -- TODO
 eval (Derivative e e0)   = undefined -- TODO
 \end{code}
+\caption{Function \cmd{eval}. Takes a syntactic representation and turns it into a semantic function.}\label{code:eval-def}
 \end{codefig}
 
 
@@ -291,7 +293,6 @@ eval (Derivative e e0)   = undefined -- TODO
 \todo[inline]{Note: I'm not certain the Shift:s are correct or whether there should be a
   negate there somewhere, thus I've done TODO:s on all I'm not sure get the
   correct sign. Also, this is still in development, needs cleanup.} ~\\
-\caption{Definition of \cmd{laplace}, the Laplace transform of an \cmd{Expression}.}\label{code:laplace-def}
 \begin{code}
 -- rules
 laplace :: Expression Complex -> Expression Complex -- TODO: maybe instead do Time->Freq
@@ -317,9 +318,12 @@ laplace (Const 1 :-: Exp (Negate (Const a :*: Id))) = Const a :/: (Id :*: Shift 
 laplace (Exp Id) = laplace (Exp (Const 1 :*: Id))
 -- ... some more special cases, not sure we care?
 -- TODO: Doublecheck signs on the next two
-laplace (Exp (Negate (Const a :*: Id)) :*: Sin (Const omega :*: Id)) = Const omega :/: (Shift a (Id :*: Id) :+: (Const (omega*omega)))
-laplace (Exp (Negate (Const a :*: Id)) :*: Cos (Const omega :*: Id)) = (Shift a Id) :/: (Shift a (Id :*: Id) :+: (Const (omega*omega)))
+laplace (Exp (Negate (Const a :*: Id)) :*: Sin (Const omega :*: Id)) = 
+  Const omega :/: (Shift a (Id :*: Id) :+: (Const (omega*omega)))
+laplace (Exp (Negate (Const a :*: Id)) :*: Cos (Const omega :*: Id)) = 
+  (Shift a Id) :/: (Shift a (Id :*: Id) :+: (Const (omega*omega)))
 \end{code}
+\caption{Definition of \cmd{laplace}, the Laplace transform of an \cmd{Expression}.}\label{code:laplace-def}
 \end{codefig}
 
 %The following code contains functions that print out an Expression in more human readable code. It's lightly adapted from \cite{TSSarbete}.

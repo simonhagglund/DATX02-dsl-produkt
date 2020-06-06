@@ -5,7 +5,7 @@
 
 
 \subsection{Integrals}\label{sec:integrals}
-Say we've got a function. This function can be expressed as a line on a graph. This line separates the graph in two sections; one above and one below the line.
+Say we've got a function. This function can be expressed as a curve on a plane. This line separates the plane in two sections; one above and one below the line.
 
 \begin{figure}[h!]
     \centering
@@ -14,10 +14,10 @@ Say we've got a function. This function can be expressed as a line on a graph. T
     \label{integralgraph}
 \end{figure}
 
-How much space exists below the line?
+How large of an area exists below the curve?
 
 \subsubsection{Setting up the Language}
-A problem like the one described above is normally solved with an integral. To solve an integral, we'll first need a language that can describe the function(which in turn describes the line).
+A problem like the one described above is normally solved with an integral. To solve an integral, we'll first need a language that can describe the function (which in turn describes the line).
 
 Unlike complex numbers, there is no one uniform expression that can describe any function. Polynomials, however, get pretty close, so let's use those as a basis:
 %Thus, this time, we'll have to invent something a little bit more flexible.
@@ -33,14 +33,14 @@ data Funk = X
 \fi
 \begin{minted}{haskell}
 data Funk =
-  | Constant Double
+  Constant Double
   | X Double
   | XSquare Double
   | Add Funk Funk
   deriving (Show)
 \end{minted}
 
-The essence of polynomials is to split an expression into smaller chunks that are added together to create a greater whole. Each line in the above datatype is a ''word'' in our DSL. The constant should be self-explanatory; it's a constant number, expressed as a Double. ''X Double'' is our way of writing basic undefined variables on the form ''aX'', I.E. 5X, 0.33X, or indeed just 1X. XSquare uses the same basic concept; ''aX$^2$'' can be 5X$^2$, 0.33X$^2$, etc.
+The idea behind polynomials is to split an expression into smaller chunks that are added together to create a greater whole. Each line in the above datatype is a ''word'' in our DSL. The constant should be self-explanatory; it's a constant value, expressed as a Double. ''X Double'' is our way of writing a (so far) undefined variable on the form ''aX'', i.e. 5X, 0.33X, or indeed just 1X. XSquare uses the same basic concept; ''aX$^2$'' can be 5X$^2$, 0.33X$^2$, etc.
 Finally, ''Add'' is used to string our words together into ''sentences''. As an example, the polynomial function ''$5 + 4X^2$'' would in our DSL be written as
 \begin{minted}{haskell}
 test :: Funk
@@ -48,7 +48,6 @@ test = Add test1 test2 where
     test1 = Constant 5
     test2 = XSquare 4
 \end{minted}
-
 Simple enough, and easily expanded, too. If we ever wanted any other functionality, be it roots, pies, or trigonometric functions, we'd simply need to add a word for them. As such, we can keep our ''language'' limited to the above for now; the rest will be added in the sections that use them.
 
 \iffalse
@@ -69,11 +68,8 @@ The Multiply word, in this case, ties two X's together, while the Add word ties 
 This is still a very limited language. At some point, we'll probably want more words to describe any other operations we might want to be part of our calculations; powers, divisions, roots, etc. The list is effectively endless, and so to keep things comprehensive, let's stick to this simplified version for now.
 \fi
 
-\paragraph{} We're still not ready for integrals, however. First, we'll also need a function that takes the sentences(functions) we just created and calculates them to produce a result. In practice, this is simplicity itself; we'll simply replace each word with their algebraic equivalent and let Haskell roleplay as a calculator for a moment. To wit:
+We're still not ready for integrals, however. First, we'll also need a function that takes the sentences(functions) we just created and calculates them to produce a result. In practice, this is simplicity itself; we'll simply replace each word with their algebraic equivalent and let Haskell roleplay as a calculator for a moment. To wit:
 \begin{minted}{haskell}
--- calculate
---input: function, value for X
---output: result
 calculate :: Funk -> Double -> Double
 calculate (Constant double) value = double
 calculate (X double) value        = double * value
@@ -81,10 +77,10 @@ calculate (XSquare double) value  = double*(value^2)
 calculate (Add funk1 funk2) value = (calculate funk1 value) + (calculate funk2 value)
 \end{minted}
 
-As noted in the code itself, the ''value'' input is whichever value we desire X to be.
+The ''value'' input in the above code is whichever value we desire X to be.
 
 \begin{exercise}
-Expand the DSL with a word for powers other than squares. Like the other words, it should include a constant multiplier and integrate correctly with ''calculate'', above. Hint: as evidenced by Add, there is no rule saying a word can only include one value.
+Expand the DSL with a word for powers other than squares. Like the other words, it should include a constant multiplier and integrate correctly with \cmd{calculate}, above. Hint: as evidenced by \cmd{Add}, there is no rule saying a word can only include one value.
 \end{exercise}
 
 \iffalse
@@ -164,7 +160,7 @@ bfIntegral'' funk start end
 \end{minted}
 \fi
 
- If this is still not enough.. well, there's still one subsection left to read. Beware though, it'll require a little more mathematical understanding.
+ If this is still not enough.. well, there's still one subsection left to read. Beware though, it'll require a slightly more abstract view of mathematics.
 
 \subsubsection{An Elegant yet Primitive Solution}
 *deep breath*
@@ -173,27 +169,33 @@ During prior math courses, you should've ran into derivative functions.
 
 A derivative function, conceptually speaking, is a function transformed from describing a value for a specific input, to describing how that value changes depending on input.
 
-You may realize that this sounds eerily similar to what we are hoping to do with integrals; let's take another look at the graph from the beginning of this section \ref{integralgraph}.
+You may realize that this sounds eerily similar to what we are hoping to do with integrals; let's take another look at the figure from the beginning of this section:
 
+\begin{figure}[h!]
+    \centering
+    \includegraphics[scale= 0.3]{Images/integralGraph.png}
+    \caption{}
+    \label{integralgraph}
+\end{figure}
 
-We are looking for the value underneath the line described by a function; a line that describes the change in that value depending on input. We are looking for the exact opposite of a derivative function. We are looking for what mathematicians refer to as ''primitive functions''. This name is an homage to the idea that our function has already been derived, and we are seeking its ancient, gnarled, ''primitive'' ancestor. In this manner, all functions can be considered to exist in secret pairs; a primitive ancestor, and a punk derivative.
+We are looking for the area underneath a curve described by a function; a line that describes the change in that value depending on input. We are looking for the exact opposite of a derivative function. We are looking for what mathematicians refer to as ''primitive functions''. This name is an homage to the idea that our function has already been derived, and we are seeking its ancient, gnarled, ''primitive'' ancestor. In this manner, all functions can be considered to exist in secret pairs; a primitive ancestor, and a punk derivative.
 
 For the sake of brevity, let's not go indepth on how derivativation function on a micro-level, and instead limit ourselves to the more commonly used laws of derivation. Specifically, let's invert them:
 
 \begin{minted}{haskell}
 primitivize :: Funk -> Double -> Funk
-primitivize funk constant = Add (primitivize' funk) + (Constant constant)
+primitivize funk constant = Add (primitivize' funk) (Constant constant)
 
 primitivize' :: Funk -> Funk
-primitivize' Constant double = X double
-primitivize' X double        = XSquare (double/2)
-primitivize' XSquare double  = -- Your implementation of powers goes here; power=3, double/3
-primitivize' Add funk1 funk2 = Add (primitivize' funk1) (primitivize' funk2)
+primitivize' (Constant double) = X double
+primitivize' (X double)        = XSquare (double/2)
+primitivize' (XSquare double)  = -- Your implementation of powers goes here; power=3, double/3
+primitivize' (Add funk1 funk2) = Add (primitivize' funk1) (primitivize' funk2)
 \end{minted}
 
 Assuming the rules of derivation are known, the bulk of primitivize' shouldn't be overly surprising.
 When deriving, each X is multiplied with their power, and then said power is reduced by one. Thus, if we're seeking the primitive function version of the function, we instead increase the power by one, and then divide by the new power.
-Standalone constants are removed when deriving. Thus, any remaining constants in derived version of the function must've once had an attached variable.
+Standalone constants are removed when deriving a function. Thus, any remaining constants in the derived version of the function must've once had an attached variable.
 In addition, we must consider the possibility that there once was another constant that was lost on derivation; this is why we must supply a replacement constant when finding the primitive function. For integral purposes, this constant will always be zero, but it's still important to know that it technically exists.
 Add remains unchanged.
 
@@ -201,7 +203,7 @@ Going back to the example used in the brute force solution, we should now be abl
 \begin{minted}{haskell}
 primitiveTest :: Funk
 primitiveTest = primitivize test 0
-calculate ((primitiveTest 5) - (primitiveTest 2))
+(calculate primitiveTest 5) - (calculate primitiveTest 2)
 \end{minted}
 
 \begin{exercise}
@@ -213,4 +215,4 @@ ADVANCED: Expand the DSL with a word for a complex constant, plus associated fun
 
 Once set up, the primitive solution is indeed elegant, but it does have one major flaw; it only works so long as we can find a primitive version of the function, and depending on the operators involved, this might be easier said than done.
 
-Finally, there are more extensive versions of the above haskell code in the appendix, if you're interested.
+Finally, there are more extensive versions of the above Haskell code in the appendix, if you're interested.

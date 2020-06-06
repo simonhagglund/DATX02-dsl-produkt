@@ -21,27 +21,26 @@ import FunNumInst
 
 \subsection{The Expression datatype}
 Like in section \ref{sec:integrals}, we create a recursive datatype. We will not
-state it in it's entirety here, but you can find it in \ref{sec:code}. What we
+state it in it's entirety here, but you can find it in Appendix \ref{sec:appcode}. What we
 will do is show some parts of it and talk about how they fit together. 
 
-First, we declare a new datatype, which we call \cmd{Expression}, which takes a parameter \cmd{a}. 
+First, we declare a new datatype, \cmd{Expression}, which takes a parameter \cmd{a}. 
 \begin{code}
 data Expression a = ...
 \end{code}
 The parameter is the type of the expression: we will mostly use \cmd{Expression Complex}, which in essence is a syntactic representation of a function of a complex variable.
-After that, we give some examples of how to construct \cmd{Expression}s,
-separated by \cmd{|}. The two most important of these are \cmd{Const a} and
+After that, we give some examples of how to construct \cmd{Expression}s. The two most important of these are \cmd{Const a} and
 \cmd{Id}. These represent the constant function and the identity function,
-respectively. \todo{Can we assume they know what id is?} For example, 
+respectively. \todo{Can we assume they know what id is?} 
 \begin{example}
   Create the constant $2+3i$ as an \cmd{Expression}. 
 \end{example}
 \begin{solution}
-~  
-\begin{code}
+%~  
+\begin{minted}[xleftmargin=60px,linenos=false]{haskell}
 testExp1 :: Expression Complex 
 testExp1 = Const (Complex (2, 3))
-\end{code} 
+\end{minted} 
 \end{solution}
 
 The next four are the four arithmetic operations for \cmd{Expression}, e.g. we can create an \cmd{Expression} by adding two other together. 
@@ -62,7 +61,7 @@ testExpression = Sin (Const 3 :*: Id) :+: Exp (Negate (Id))
   f = \fcn{t}{\sin (3t) + e^{-t}}
 \end{equation*}
 \end{example}
-One way to visualise \cmd{Expression}s is to drawn them in syntax tree, see
+One way to visualise \cmd{Expression}s is to drawn them in syntax tree, see figure
 \ref{fig:expression-syntax-tree}. \todo{Explain what happens in the picture.}
 \begin{figure}
   \centering
@@ -112,7 +111,7 @@ eval Id                  = id
 eval Pi                  = eval (Const pi)
 eval (e1 :+: e2)         = eval e1 + eval e2
 eval (e1 :*: e2)         = eval e1 * eval e2
-eval (Shift tau e)       = \t -> (shift tau) (eval e) t -- shifts e by tau, i.e. begins after tau seconds
+eval (Shift tau e)       = shift tau (eval e) -- shifts e by tau, i.e. begins after tau seconds
 eval (Negate e)          = negate (eval e)
 eval (Exp e)             = exp    (eval e)
 eval (Sin e)             = sin    (eval e)
@@ -160,7 +159,7 @@ tmp = eval testExpression
 
 \subsubsection{Some conventions and notations}
 Sometimes in math books there is some notational abuse: does $f(t)$ mean the
-function $f$ or $f$ applied to the value $t$? Often times we can understand
+function $f$ or $f$ applied to the value $t$? We can often understand
 which is meant from context, but not always. We will avoid this problem by being
 explicit when a function is applied to a value or not: the function will be written
 $f$, the function applied to a value will be written $f(t)$. Sometimes we need
@@ -179,9 +178,18 @@ One notation we won't use but which might show up in other literature
 is to write $\tilde{f}$ for the Laplace transform of $f$. 
 % \todo[inline]{Will refer to functions without parameter if possible, use lambda calc if not. f(t) means f applied to t.}
 % \todo[inline]{L (f) = F, unless stated otherwise. $\tilde{f}$ sometimes used, we shant. We use {} instead of (); some others do, some dont'. Disambiguate.}
-\subsection{The definition and corresponding types}
-Before we start: this section will start a little bit math heavy. Don't be
-discouraged. We will give the mathematical definition of the Laplace transform,
+
+Some conventions we will use that are not strictly related to the Laplace
+transform is that we will write addition and multiplication between (real and complex) functions
+the same way as we do between (real and complex) numbers, using the ordinary
+symbols $+$ and $\cdot$, i.e. we will let the operators have polymorphic types. 
+We will however be consistent and write out $\cdot$ instead of just keeping two
+functions next to each other (e.g. $x \cdot y$ instead of $xy$).
+% \todo[inline]{Maybe mention $+$ and $\cdot$ between reals and between functions.}
+
+\subsection{The definition of the Laplace transform and corresponding types}
+Before we start: this section will start a little bit math heavy --- don't be
+discouraged! We will give the mathematical definition of the Laplace transform,
 take it apart a little and analyse the types. When we're done with that,
 however, we will just skip the calculating and show some shortcuts. If you're
 feeling like the math just isn't making sense, you can safely jump to section
@@ -203,48 +211,68 @@ integral, the exponential is a function of $s$ in the wider scope.
 Thus the Laplace transform of a function $f$ is an integral of that function
 multiplied by an exponential function.
 
-One way to write it could be: 
-\begin{code}
-laplace' :: Expression Complex -> Expression Complex -> Expression Complex
-laplace' f e = Integ (Const 0) (Infinity) (exp :*: f) 
-               where exp = Exp (Negate (e) :*: Id) 
--- TODO: Does not compile currently due to Infinity. Maybe say it's pseudocode? 
-\end{code}
+\begin{newtext}
+What variables are free in this expression? After some inspection, we might see that $f$ and $s$ are the variables of the equation: $0$ and $\infty$ are obviously not variable, and $t$ is bound by the integral. As $f$ is bound over the equation, it acts as a variable. Thus the final type of the Laplace transform can be identified as 
+\begin{code'}
+laplace :: (R -> R) -> (Complex -> Complex)
+\end{code'} 
+or using \cmd{Expression}: 
+\begin{code'}
+laplace :: Expression R -> Expression Complex 
+\end{code'} 
+i.e. it takes a real function and returns a complex function. 
 
-\todo[inline]{Look at the types of all the parts, write some more on it.}
+%Put together, this means that the Laplace transform is essentially a higher-order function, which takes a function of type \cmd{R -> R} and returns a function of type \cmd{Complex -> Complex}. 
+Now, unfortunately we have no way of binding a variable with an integral, and thus implementing the definition of the Laplace transform does not work well (and besides, it's an integral including infinity, it's not going to be very easy to implement either way). One possible naive implementation might look like
+\end{newtext}
+\begin{code'}
+laplace' :: Expression R -> Expression Complex -> Expression Complex
+laplace' f = Integ (Const 0) (Infinity) (exp :*: f) 
+               where exp = Exp (Negate (Const s) :*: Id) 
+\end{code'}
+\begin{newtext}
+but this is clunky and does not reflect how we typically use Laplace transforms. 
+
+What we will do is to write \cmd{laplace} using pattern matching. This will act similarly to what we will call the tabular approach, i.e. calculating the Laplace transform using the rules and formulas found in the table. 
+\end{newtext}
+%\todo[inline]{Look at the types of all the parts, write some more on it.}
 
 
 % \todo[inline]{If the math scares you, don't be discouraged. We will show you shortcuts later.}
 % \todo[inline]{State definition.}
 %\todo[inline]{Write in Expression form}
-However, this is really annoying to calculate. Besides, writing a proper
-definition of how to evaluate \cmd{DefInteg} is really, \emph{really} hard. We
-don't want to do to that. Instead, what we will do is to show you how to use a
-table to calculate transforms. 
+%However, this is really annoying to calculate. Besides, writing a proper
+%definition of how to evaluate \cmd{DefInteg} is really, \emph{really} hard. We
+%don't want to do to that. Instead, what we will do is to show you how to use a
+%table to calculate transforms. 
 % \todo[inline]{This is garbage to actually calculate.}
 % \todo[inline]{We will use rules instead.}
 
-Some conventions we will use that are not strictly related to the Laplace
-transform is that we will write addition and multiplication between (real and complex) numbers
-the same way as we do between (real and complex) functions, using the ordinary
-symbols $+$ and $\cdot$, i.e. we will treat them as polymorphic types. 
-We will however be consistent and write out $\cdot$ instead of just keeping to
-functions next to each other (e.g. $x \cdot y$ instead of $xy$).
-% \todo[inline]{Maybe mention $+$ and $\cdot$ between reals and between functions.}
 \subsection{Common rules, how to use them}\label{sec:common-rules}
-\todo[inline]{Add recreation of the table they're allowed to use during exam, maybe?}
+%\todo[inline]{Add recreation of the table they're allowed to use during exam, maybe?}
 
+\todo{I tabellen som de får ha på tentan står det ofta $y(t)$ istället för $f(t)$, bör vi använda $f$ eller $y$?}
 \begin{table}
     \centering
     \caption{Two tables of the Laplace transform.}
     \label{fig:laplace_tables}
 \begin{subfigure}{0.999\textwidth}
     \centering
-    \caption{Laplace transform ordinary}
+    \caption{Table of Laplace transforms in more mathematical writing. This is a shortened and reworked version of the table allowed on the exam.}
     \label{fig:laplace_table_ord}
-    \begin{tabular}{c|c}
-    $f$ & $F$ \\
-    $\fcn{t}{y(t - T)}$ & $\fcn{s}{e^{-sT}Y(s)}$
+    \begin{tabular}{c|p{5cm}}
+    $f$ & $F$ \\ \hline 
+    $f_1 + f_2$ & $F_1 + F_2$ \\ 
+    $f'$ & $\fcn{s}{s \cdot F(s) - f(0)}$ \\
+    $f^{(k)}$ & $\fcn{s}{s^k F(s) - s^{k-1} f(0) - s^{k-2}f'(0) - ... - f^{(k-1)}(0)}$ \\
+    $\fcn{t}{\int_0^t f(\tau) \dd \tau}$ & $\fcn{s}{\frac{1}{s} \cdot F(s)}$\\
+    $\fcn{t}{f(t - T)}$ & $\fcn{s}{e^{-sT}F(s)}$ \\ 
+    $\fcn{t}{e^{-at}f(t)}$ & $\fcn{s}{F(s+a)}$ \\ 
+    $\fcn{t}{\int_0^t f_1(\tau) \cdot f_2(t - \tau)}$ & $F_1 \cdot F_2$ \\
+    $\delta$ & 1 \\ 
+    1 & $\fcn{s}{\frac{1}{s}}$ \\
+    $\fcn{t}{t}$ & $\fcn{s}{\frac{1}{s^2}}$ \\ 
+    $\fcn{t}{e^{-at}}$ & $\fcn{s}{\frac{1}{s+a}}$
     \end{tabular}
 \end{subfigure} \\
 \begin{subfigure}{0.999\textwidth} 
@@ -269,12 +297,17 @@ laplace (Id)      = Const 1 :/: (Id :*: Id) -- L {t} = \s -> 1/(s^2)
 laplace (Exp (Negate (Const a :*: Id))) = Shift (negate a) (Const 1 :/: Id)-- TODO: Check signs
 laplace (Const 1 :-: Exp (Negate (Const a :*: Id))) = Const a :/: (Id :*: Shift a Id) -- TODO: Doublecheck signs. Also, is this necessary?
 
-laplace (Exp (Negate (Const a)) :-: Exp (Negate (Const b))) = Const (b - a) :/: (Shift (negate a) Id :*: Shift (negate b) Id)
-laplace (Id :-: (Const 1 :-: Exp (Negate (Const a) :*: Id)) :/: Const a) = Const a  :/: (Id :*: Id :*: Shift (negate a) Id)
-laplace (Const 1 :-: (Const 1 :+: Const a :*: Id) :*: Exp (Negate (Const a) :*: Id)) = Const (a*a) / (Id :*: Shift (Negate a) (Id :*: Id)) -- Const a :*: Const a instead of Const (a*a)?
+laplace (Exp (Negate (Const a)) :-: Exp (Negate (Const b))) = 
+  Const (b - a) :/: (Shift (negate a) Id :*: Shift (negate b) Id)
+laplace (Id :-: (Const 1 :-: Exp (Negate (Const a) :*: Id)) :/: Const a) = 
+  Const a  :/: (Id :*: Id :*: Shift (negate a) Id)
+laplace (Const 1 :-: (Const 1 :+: Const a :*: Id) :*: Exp (Negate (Const a) :*: Id)) = 
+  Const (a*a) / (Id :*: Shift (Negate a) (Id :*: Id)) -- Const a :*: Const a instead of Const (a*a)?
 -- TODO: Doublecheck signs on the next two
-laplace (Exp (Negate (Const a :*: Id)) :*: Sin (Const omega :*: Id)) = Const omega :/: (Shift a (Id :*: Id) :+: (Const (omega*omega)))
-laplace (Exp (Negate (Const a :*: Id)) :*: Cos (Const omega :*: Id)) = (Shift a Id) :/: (Shift a (Id :*: Id) :+: (Const (omega*omega)))
+laplace (Exp (Negate (Const a :*: Id)) :*: Sin (Const omega :*: Id)) = 
+  Const omega :/: (Shift a (Id :*: Id) :+: (Const (omega*omega)))
+laplace (Exp (Negate (Const a :*: Id)) :*: Cos (Const omega :*: Id)) = 
+  (Shift a Id) :/: (Shift a (Id :*: Id) :+: (Const (omega*omega)))
     \end{code'}
 \end{subfigure}
 \end{table}
@@ -359,7 +392,8 @@ multiplication (and subtraction of an initial value).
 Mathematically, this can be written
 \begin{equation*}
   %\Lplc\left\{\fcn{t}{\dv{t} f(t)}\right\} = \fcn{s}{s \cdot \Lplc\{f\}(s) - f(0)}
-  \Lplc\left\{\fcn{t}{f'(t)}\right\} = \fcn{s}{s \cdot \Lplc\{f\}(s) - f(0)}
+  %\Lplc\left\{\fcn{t}{f'(t)}\right\} = \fcn{s}{s \cdot \Lplc\{f\}(s) - f(0)}
+  \Lplc\left\{f'\right\} = \fcn{s}{s \cdot \Lplc\{f\}(s) - f(0)}
 \end{equation*}
 i.e. if we have a derivative of a function, the corresponding Laplace transform
 is the Laplace transform of the function (not the derivative) multiplied with
@@ -461,6 +495,9 @@ which is what we wanted, and thus we're done.
 % \todo[inline]{Also used in PID}
 %\todo[inline]{Show rule}
 \todo[inline]{Discuss types}
+But what are the types included in this rule? 
+
+Well, as previously mentioned, \cmd{laplace} is a function of type \cmd{(R -> R) -> (Complex -> Complex)}, i.e. it takes a real function and returns a complex function. 
 \subsubsection{Integral rule}
 Just like we can use the Laplace transform to transform differentiation into
 multiplication, we can use it to transform integration into division. This is

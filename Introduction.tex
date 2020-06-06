@@ -7,10 +7,13 @@ The method we use in this material is to create domain-specific languages (DSLs)
 
 All DSLs in this material are written in Haskell, so the syntax should be familiar from previous courses. If you are not familiar with Haskell or just want to brush up your skills, we recommend ``Learn you a Haskell for Great Good!'' by Miran Lipovača (\href{http://learnyouahaskell.com/}{http://learnyouahaskell.com/}). 
 
+\begin{newtext}
+Before you start, we just want to mention that this learning material hasn't been tested yet, and as such we can't guarantee that it will be helpful. We hope that reading it will be beneficial, however. 
+\end{newtext}
 We hope you find this reading useful. Best of luck!
 
 
-\todo[inline]{Write about how contact to us in case of errors etc. Write about how the material is not tested.}
+\todo[inline]{Write about how contact to us in case of errors etc.}
 \todo[inline]{Maybe add an example of code and an example of pseudocode, ``code will be typeset like this and pseudocode like this''?}
 
 \subsection{Basic control theory}
@@ -25,7 +28,7 @@ Control theory studies continuous systems and the control of these. A easy examp
 \end{figure}
 
 
-Control systems are created with the combination of measuring a magnitude and a controller. The magnitude measurements and controller create the system input u(t). A system can also utilize the output from the control. This is possible with a feedback loop and is a very common practice in control theory. The quest for all control systems is to create a stable system without delay or overshoot. \todo{(Ska lägga till närmare förklaring för dessa begrepp)} In the course ERE103 this is fulfilled by combining tree different parameters (P, I, D) to create different controllers f(t).  P is just a constant and can decrease the delay of the system. P creates the most basic controller f(t) = P. The I parameter is the integrating part of the controller and is used to remove the stationary fault. The D parameter is used to avoid overshoot. These parameters can be combined to fulfill you specifications.  The most common combination of these parameters in this course are PD, PI and PID. A controller is just a function and can therefore easily be modeled in Haskell.
+Control systems are created with the combination of measuring a magnitude and a controller. The magnitude measurements and controller create the system input u(t). A system can also utilize the output from the control. This is possible with a feedback loop and is a very common practice in control theory. The quest for all control systems is to create a stable system without delay or overshoot. \todo{(Ska lägga till närmare förklaring för dessa begrepp)} In the course ERE103 this is fulfilled by combining tree different parameters (P, I, D) to create different controllers f(t).  P is just a constant and can decrease the delay of the system. P creates the most basic controller f(t) = P. The I parameter is the integrating part of the controller and is used to remove the stationary fault. The D parameter is used to avoid overshoot. These parameters can be combined to fulfill your specifications.  The most common combination of these parameters in this course are PD, PI and PID. A controller is just a function and can therefore easily be modeled in Haskell.
 
 
 

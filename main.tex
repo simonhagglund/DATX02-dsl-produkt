@@ -1,4 +1,4 @@
-\documentclass%[final]%removes todos & new/mod color
+\documentclass[final]%removes todos & new/mod color
 {article}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %
@@ -25,6 +25,7 @@
 \usepackage{tocloft}
 \usepackage{transparent}
 \usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{mathtools}
 \usepackage{mathrsfs}
 \usepackage{tikz}
     \usetikzlibrary{shapes,arrows}
@@ -116,7 +117,7 @@
 
 %%%%% Minted 
 \setminted{bgcolor=black!10, linenos, escapeinside=\%\%}
-\setmintedinline{bgcolor={}}
+\setmintedinline{bgcolor={}, escapeinside=;;}
 
 % env to surround minted with to add caption and label
 \newenvironment{codefig}{\captionsetup{type=listing}}{}
@@ -133,7 +134,9 @@
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+%% help for \smashoperator
+\DeclareMathOperator*{\sumprod}{\sum\prod}
+%%
 
 \DeclareCaptionFont{blue}{\color{LightSteelBlue3}}
 \addbibresource{refs.bib}
@@ -198,7 +201,7 @@
 \title{{\Huge Domain-specific languages of Control~Theory}
 \vspace*{5.5mm}
 % (Using Domain-specific Languages?)
-\\ {\Large - A supplementary learning material for ERE103} 
+\\ {\Large A supplementary learning material for ERE103} 
 
 \vspace*{10mm}
 \begin{figure}[H]
